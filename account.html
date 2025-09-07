@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My BB — Home</title>
+  <!-- Google font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Leckerli+One&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" />
+  <style>
+    :root {
+      --bb-primary: #0dcaf0;
+      --bb-accent: #20c997;
+      --bb-neutral-0: #ffffff;
+      --bb-neutral-900: #0b0f12;
+      --bb-muted: #6c757d;
+    }
+    body { min-height: 100vh; }
+    /* Cards: clean, no hover glow */
+    .bb-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      backdrop-filter: blur(8px);
+    }
+    [data-bs-theme="light"] .bb-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(0, 0, 0, 0.06);
+    }
+    .bb-section-title { letter-spacing: 0.2px; }
+    .bb-kpi { font-variant-numeric: tabular-nums; }
+    .bb-muted { color: var(--bb-muted); }
+    .navbar .brand-dot {
+      width: 25px; height: 25px; display: inline-block;
+      margin-right: .5rem;
+    }
+    .navbar-brand {font-family: "Leckerli One", cursive; color: var(--bb-primary) ;}
+    .form-control:focus, .btn:focus {
+      box-shadow: 0 0 0 .25rem rgba(13, 202, 240, 0.25);
+      border-color: var(--bb-primary);
+    }
+    .progress-labels { display: flex; justify-content: space-between; font-size: .9rem; }
+    /* Grid */
+    .bb-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 768px) {
+      .bb-grid { grid-template-columns: repeat(12, 1fr); }
+      .col-4-md { grid-column: span 4; }
+      .col-8-md { grid-column: span 8; }
+      .col-12-md { grid-column: span 12; }
+    }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .api-actions { display: flex; gap: .5rem; justify-content: flex-end; }
+    .copy-btn { cursor: pointer; }
+    .copy-btn:hover { color: inherit; } /* no hover tint */
+    .bb-nowrap-md { white-space: normal; }
+    @media (min-width: 992px) { .bb-nowrap-md { white-space: nowrap; } }
+    .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(2px); }
+    [data-bs-theme="light"] .loading-overlay { background: rgba(255,255,255,0.6); }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg bg-body border-bottom sticky-top">
+    <div class="container-fluid">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary me-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#bbSidebar" aria-controls="bbSidebar" aria-label="Open sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <img src="assets/triangle-logo.svg" class="brand-dot" alt="" type="image/svg+xml" width="100" height="100">
+        <a class="navbar-brand fw-semibold" href="index.html">My BB</a>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button id="btnChangeKey" class="btn btn-outline-info">
+          <i class="fa-solid fa-key me-1"></i> API Key
+        </button>
+        <button id="btnTheme" class="btn btn-outline-secondary" aria-label="Toggle theme">
+          <i class="fa-solid fa-sun d-none" id="iconSun"></i>
+          <i class="fa-solid fa-moon" id="iconMoon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <!-- SIDEBAR -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="bbSidebar" aria-labelledby="bbSidebarLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="bbSidebarLabel">
+        <i class="fa-solid fa-robot me-2"></i> My BB
+      </h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column gap-2">
+      <a class="btn btn-primary"><i class="fa-solid fa-user me-2"></i>Profile</a>
+      <a class="btn btn-outline-primary" href="index.html" rel="noopener"><i class="fa-solid fa-robot me-2"></i>Bots</a>
+      <a class="btn btn-outline-primary" href="https://docs.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-book me-2"></i>Documentation</a>
+      <a class="btn btn-outline-primary" href="https://app.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-screwdriver-wrench me-2"></i>App Console</a>
+      <a class="btn btn-outline-primary" href="https://status.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-signal me-2"></i>Status</a>
+      <hr />
+      <button id="btnClearKey" class="btn btn-outline-danger"><i class="fa-solid fa-trash me-2"></i>Clear API Key</button>
+      <div class="text-center bb-muted mt-3">
+      Made with ❤ by <a href="https://t.me/bottercc" rel="noopener" style="text-decoration: none;">Botter</a></div>
+    </div>
+  </div>
+  <!-- MAIN -->
+  <main class="container py-4">
+    <header class="mb-4">
+      <h1 class="h3 bb-section-title text-balance">
+        <i class="fa-solid fa-house me-2 text-info"></i> Bot Builder Home
+      </h1>
+      <p class="bb-muted mb-0">Manage your Bots.Business account at a glance. Mobile-first, clean, and fast.</p>
+    </header>
+    <section class="bb-grid">
+      <!-- Profile -->
+      <h2 class="h5 bb-nowrap-md col-12-md"><i class="fa-solid fa-user me-2"></i> Profile</h2>
+      <article class="bb-card p-3 col-12-md">
+        <div class="d-flex align-items-center justify-content-end mb-2">
+          <span class="badge text-bg-info" id="planName">—</span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:56px;height:56px;background:rgba(13,202,240,0.12);border:1px solid rgba(13,202,240,0.25);">
+            <i class="fa-solid fa-user fa-lg text-info"></i>
+          </div>
+          <div>
+            <div class="fw-semibold" id="email">—</div>
+            <div class+"fw-semibold" id="uid">—</div>
+          </div>
+        </div>
+        <hr />
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="text-secondary small">Command timeout</div>
+          <div class="bb-kpi"><span id="commandTimeout">—</span> s</div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between mt-2">
+          <div class="text-secondary small">Ads</div>
+          <div>
+            <span id="haveAdsBadge" class="badge text-bg-secondary">—</span>
+          </div>
+        </div>
+      </article>
+      <!-- API Key below Profile -->
+      <h2 class="h5 bb-nowrap-md col-12-md mt-4"><i class="fa-solid fa-key me-2"></i> API Key</h2>
+      <article class="bb-card p-3 col-12-md">
+        <div class="api-actions mb-2">
+          <button id="btnToggleKey" class="btn btn-outline-secondary btn-sm" aria-label="Show/Hide API key">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+          <button id="btnCopyKey" class="btn btn-outline-info btn-sm copy-btn">
+            <i class="fa-solid fa-copy me-1"></i> Copy
+          </button>
+        </div>
+        <div class="mono small p-2 rounded border" id="apiKeyBox" style="word-break: break-all;">—</div>
+        <p class="text-secondary small mt-2 mb-0">Keep this key secure. It is stored in your browser local storage for convenience.</p>
+      </article>
+      <!-- Iterations -->
+      <h2 class="h5 mb-3 bb-nowrap-md col-12-md mt-4"><i class="fa-solid fa-rotate me-2"></i> Iterations</h2>
+      <article class="bb-card p-3 col-12-md">
+        <div class="progress-labels mb-1">
+          <div>Used: <span class="bb-kpi" id="progressUsed">—</span></div>
+          <div>Limit: <span class="bb-kpi" id="limitTotal">—</span></div>
+        </div>
+        <div class="progress" role="progressbar" aria-label="Iterations remaining">
+          <div id="quotaBar" class="progress-bar bg-info" style="width: 0%"></div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between mt-2">
+          <div class="text-secondary small">Available (remaining)</div>
+          <div class="bb-kpi"><span id="remaining">—</span></div>
+        </div>
+        <hr />
+        <div class="d-flex flex-wrap justify-content-between small">
+          <div>Ads Limit: <span class="bb-kpi" id="adsLimit">—</span></div>
+          <div>Base Limit: <span class="bb-kpi" id="baseLimit">—</span></div>
+          <div>Extra Points (EP): <span class="bb-kpi" id="extraPoints">—</span></div>
+        </div>
+      </article>
+      <!-- Linked Telegram Accounts -->
+      <h2 class="h5 mb-3 bb-nowrap-md col-12-md mt-4"><i class="fa-brands fa-telegram me-2"></i> Linked Telegram Accounts</h2>
+      <article class="bb-card p-3 col-12-md">
+        <div id="linkedAccountsList" class="d-flex flex-column gap-2">
+          <p class="text-secondary small mb-0">No linked accounts.</p>
+        </div>
+      </article>
+    </section>
+  </main>
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+    <div class="spinner-border text-info" role="status" aria-label="Loading"></div>
+  </div>
+  <!-- Toast -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 2100">
+    <div id="toast" class="toast align-items-center text-bg-dark border-0" role="status" aria-live="polite" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toastBody">Hello</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+  <!-- API Key Modal -->
+  <div class="modal fade" id="apiKeyModal" tabindex="-1" aria-labelledby="apiKeyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bb-card">
+        <div class="modal-header">
+          <h5 class="modal-title" id="apiKeyModalLabel">
+            <i class="fa-solid fa-key me-2 text-info"></i> Enter your API Key
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btnCloseModal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2 small text-secondary">Paste the API key for Bots.Business. It will be saved in local storage on this device.</p>
+          <label for="apiKeyInput" class="form-label">API Key</label>
+          <textarea id="apiKeyInput" class="form-control" rows="3" placeholder="Paste your API key here..."></textarea>
+          <div class="form-text text-danger d-none" id="apiKeyError">Invalid API key. Please check and try again.</div>
+        </div>
+        <div class="modal-footer">
+          <button id="btnSaveKey" type="button" class="btn btn-info">
+            <i class="fa-solid fa-floppy-disk me-2"></i> Save & Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+  <script>
+    const STORAGE_NAME = "bb_api_key";
+    const API_URL = "https://appapi.bots.business/v1/user/unsecure?api_key=";
+    function setStorage(name, value) {
+      localStorage.setItem(name, value);
+    }
+    function getStorage(name) {
+      return localStorage.getItem(name);
+    }
+    function deleteStorage(name) {
+      localStorage.removeItem(name);
+    }
+    function showToast(message) {
+      const el = document.getElementById("toast");
+      document.getElementById("toastBody").textContent = message;
+      const toast = bootstrap.Toast.getOrCreateInstance(el, { delay: 2500 });
+      toast.show();
+    }
+    function showLoading(show) {
+      document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
+    }
+    function setTheme(mode) {
+      document.documentElement.setAttribute("data-bs-theme", mode);
+      localStorage.setItem("bb_theme", mode);
+      document.getElementById("iconSun").classList.toggle("d-none", mode !== "light");
+      document.getElementById("iconMoon").classList.toggle("d-none", mode === "light");
+    }
+    function initTheme() {
+      const saved = localStorage.getItem("bb_theme");
+      setTheme(saved || "dark");
+    }
+    async function fetchUser(apiKey) {
+      const resp = await fetch(API_URL + encodeURIComponent(apiKey));
+      const data = await resp.json();
+      if (data && data.errors && Array.isArray(data.errors)) {
+        throw new Error("INVALID_KEY");
+      }
+      return data;
+    }
+    function maskKey(key, visible) {
+      if (visible) return key;
+      if (!key) return "—";
+      const start = key.slice(0, 4);
+      const end = key.slice(-4);
+      return start + "••••••••••••••••••••" + end;
+    }
+    function renderUser(data, apiKey, keyVisible) {
+      document.getElementById("email").textContent = "Email: "+data.email || "—";
+      document.getElementById("uid").textContent = "UID: "+data.id || "—";
+      document.getElementById("planName").textContent = data?.payment_plan?.name ?? "—";
+      document.getElementById("commandTimeout").textContent = data?.payment_plan?.command_execution_timeout ?? "—";
+      const la = data.linked_accounts || [];
+      const q = (data.quotas && data.quotas[0]) || null;
+      const limit = q?.limit ?? 0;
+      const progress = q?.progress ?? 0;
+      const remaining = Math.max(0, limit - progress);
+      const haveAds = !!(q && q.have_ads);
+      const baseLimit = q?.quotum_type?.base_limit ?? "—";
+      const adsLimit = q?.quotum_type?.ads_limit ?? "—";
+      const adsBadge = document.getElementById("haveAdsBadge");
+      adsBadge.textContent = haveAds ? "enabled" : "disabled";
+      adsBadge.className = "badge " + (haveAds ? "text-bg-success" : "text-bg-secondary");
+      const pct = limit > 0 ? Math.min(100, ((limit - progress) / limit) * 100) : 100;
+      const bar = document.getElementById("quotaBar");
+      bar.style.width = pct.toFixed(2) + "%";
+      bar.setAttribute("aria-valuenow", String(remaining));
+      bar.setAttribute("aria-valuemin", "0");
+      bar.setAttribute("aria-valuemax", String(limit));
+      document.getElementById("progressUsed").textContent = progress.toLocaleString();
+      document.getElementById("limitTotal").textContent = limit.toLocaleString();
+      document.getElementById("remaining").textContent = remaining.toLocaleString();
+      document.getElementById("extraPoints").textContent = (q?.extra_points ?? 0).toLocaleString();
+      document.getElementById("baseLimit").textContent = baseLimit.toLocaleString?.() ?? baseLimit;
+      document.getElementById("adsLimit").textContent = adsLimit.toLocaleString?.() ?? adsLimit;
+      document.getElementById("apiKeyBox").textContent = maskKey(apiKey, keyVisible);
+      const accountsList = document.getElementById("linkedAccountsList");
+      accountsList.innerHTML = "";
+      if (la.length === 0) {
+        accountsList.innerHTML = '<p class="text-secondary small mb-0">No linked accounts.</p>';
+      } else {
+        la.forEach(account => {
+          const accountText = [account.first_name, account.username ? "@" + account.username : null].filter(Boolean).join(" · ");
+          const div = document.createElement("div");
+          div.className = "d-flex align-items-center gap-2";
+          div.innerHTML = `
+            <i class="fa-brands fa-telegram text-info"></i>
+            <div class="small">
+              <div>${accountText}</div>
+              <div class="text-secondary">Telegram ID: ${account.telegramid || "—"}</div>
+              <div class="text-secondary">Language: ${account.language_code || "—"}</div>
+            </div>
+          `;
+          accountsList.appendChild(div);
+        });
+      }
+    }
+    let apiKeyVisible = false;
+    let apiKeyModal;
+    function openKeyModal() {
+      document.getElementById("apiKeyInput").value = getStorage(STORAGE_NAME) || "";
+      document.getElementById("apiKeyError").classList.add("d-none");
+      apiKeyModal = bootstrap.Modal.getOrCreateInstance(document.getElementById("apiKeyModal"));
+      apiKeyModal.show();
+    }
+    async function tryLoadWithKey(key) {
+      showLoading(true);
+      try {
+        const data = await fetchUser(key);
+        setStorage(STORAGE_NAME, key);
+        renderUser(data, key, apiKeyVisible);
+        showToast("Account loaded");
+        return true;
+      } catch (err) {
+        if (String(err && err.message) === "INVALID_KEY") {
+          showToast("Invalid API key");
+        } else {
+          showToast("Unable to load account");
+        }
+        return false;
+      } finally {
+        showLoading(false);
+      }
+    }
+    document.addEventListener("DOMContentLoaded", async () => {
+      initTheme();
+      document.getElementById("btnTheme").addEventListener("click", () => {
+        const current = document.documentElement.getAttribute("data-bs-theme");
+        setTheme(current === "light" ? "dark" : "light");
+      });
+      document.getElementById("btnChangeKey").addEventListener("click", () => {
+        openKeyModal();
+      });
+      document.getElementById("btnSaveKey").addEventListener("click", async () => {
+        const key = document.getElementById("apiKeyInput").value.trim();
+        if (!key) {
+          document.getElementById("apiKeyError").textContent = "Please enter your API key.";
+          document.getElementById("apiKeyError").classList.remove("d-none");
+          return;
+        }
+        document.getElementById("apiKeyError").classList.add("d-none");
+        const ok = await tryLoadWithKey(key);
+        if (ok) {
+          bootstrap.Modal.getInstance(document.getElementById("apiKeyModal")).hide();
+        } else {
+          document.getElementById("apiKeyError").textContent = "Invalid API key. Please check and try again.";
+          document.getElementById("apiKeyError").classList.remove("d-none");
+        }
+      });
+      document.getElementById("btnClearKey").addEventListener("click", () => {
+        deleteStorage(STORAGE_NAME);
+        showToast("API key cleared");
+        openKeyModal();
+      });
+      document.getElementById("btnToggleKey").addEventListener("click", () => {
+        apiKeyVisible = !apiKeyVisible;
+        const key = getStorage(STORAGE_NAME);
+        document.getElementById("apiKeyBox").textContent = maskKey(key, apiKeyVisible);
+        document.getElementById("btnToggleKey").innerHTML = apiKeyVisible
+          ? '<i class="fa-solid fa-eye-slash"></i>'
+          : '<i class="fa-solid fa-eye"></i>';
+      });
+      document.getElementById("btnCopyKey").addEventListener("click", async () => {
+        const key = getStorage(STORAGE_NAME);
+        if (!key) { showToast("No API key to copy"); return; }
+        try { await navigator.clipboard.writeText(key); showToast("API key copied"); }
+        catch { showToast("Copy failed"); }
+      });
+      const existingKey = getStorage(STORAGE_NAME);
+      if (!existingKey) {
+        openKeyModal();
+      } else {
+        await tryLoadWithKey(existingKey);
+      }
+    });
+  </script>
+</body>
+</html>

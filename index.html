@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My BB — My Bots</title>
+  <!-- Google font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Leckerli+One&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" />
+  <style>
+    :root {
+      --bb-primary: #0dcaf0;
+      --bb-accent: #20c997;
+      --bb-neutral-0: #ffffff;
+      --bb-neutral-900: #0b0f12;
+      --bb-muted: #6c757d;
+    }
+    body { min-height: 100vh; }
+    /* Cards: clean, no hover glow */
+    .bb-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      backdrop-filter: blur(8px);
+    }
+    [data-bs-theme="light"] .bb-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(0, 0, 0, 0.06);
+    }
+    .bb-section-title { letter-spacing: 0.2px; }
+    .bb-kpi { font-variant-numeric: tabular-nums; }
+    .bb-muted { color: var(--bb-muted); }
+    .navbar .brand-dot {
+      width: 25px; height: 25px; display: inline-block;
+      margin-right: .5rem;
+    }
+    .form-control:focus, .btn:focus {
+      box-shadow: 0 0 0 .25rem rgba(13, 202, 240, 0.25);
+      border-color: var(--bb-primary);
+    }
+    .navbar-brand {font-family: "Leckerli One", cursive; color: var(--bb-primary) ;}
+    .progress-labels { display: flex; justify-content: space-between; font-size: .9rem; }
+    /* Grid */
+    .bb-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 768px) {
+      .bb-grid { grid-template-columns: repeat(12, 1fr); }
+      .col-4-md { grid-column: span 4; }
+      .col-8-md { grid-column: span 8; }
+      .col-12-md { grid-column: span 12; }
+    }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .api-actions { display: flex; gap: .5rem; justify-content: flex-end; }
+    .copy-btn { cursor: pointer; }
+    .copy-btn:hover { color: inherit; } /* no hover tint */
+    .bb-nowrap-md { white-space: normal; }
+    @media (min-width: 992px) { .bb-nowrap-md { white-space: nowrap; } }
+    .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(2px); }
+    [data-bs-theme="light"] .loading-overlay { background: rgba(255,255,255,0.6); }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg bg-body border-bottom sticky-top">
+    <div class="container-fluid">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary me-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#bbSidebar" aria-controls="bbSidebar" aria-label="Open sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <img src="assets/triangle-logo.svg" class="brand-dot" alt="" type="image/svg+xml" width="100" height="100">
+        <a class="navbar-brand fw-semibold" href="index.html">My BB</a>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button id="btnChangeKey" class="btn btn-outline-info">
+          <i class="fa-solid fa-key me-1"></i> API Key
+        </button>
+        <button id="btnTheme" class="btn btn-outline-secondary" aria-label="Toggle theme">
+          <i class="fa-solid fa-sun d-none" id="iconSun"></i>
+          <i class="fa-solid fa-moon" id="iconMoon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <!-- SIDEBAR -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="bbSidebar" aria-labelledby="bbSidebarLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="bbSidebarLabel">
+        <i class="fa-solid fa-robot me-2"></i> My BB
+      </h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column gap-2">
+      <a class="btn btn-outline-primary" href="account.html"><i class="fa-solid fa-user me-2"></i>Profile</a>
+      <a class="btn btn-primary" rel="noopener"><i class="fa-solid fa-robot me-2"></i>Bots</a>
+      <a class="btn btn-outline-primary" href="https://docs.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-book me-2"></i>Documentation</a>
+      <a class="btn btn-outline-primary" href="https://app.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-screwdriver-wrench me-2"></i>App Console</a>
+      <a class="btn btn-outline-primary" href="https://status.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-signal me-2"></i>Status</a>
+      <hr />
+      <button id="btnClearKey" class="btn btn-outline-danger"><i class="fa-solid fa-trash me-2"></i>Clear API Key</button>
+      <div class="text-center bb-muted mt-3">
+      Made with ❤ by <a href="https://t.me/bottercc" rel="noopener" style="text-decoration: none;">Botter</a></div>
+    </div>
+  </div>
+  <!-- MAIN -->
+  <main class="container py-4">
+    <header class="mb-4 d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="h3 bb-section-title text-balance">
+          <i class="fa-solid fa-robot me-2 text-info"></i> My Bots
+        </h1>
+        <p class="bb-muted mb-0">Manage your bots at a glance.</p>
+      </div>
+      <button id="btnNewBot" class="btn btn-info"><i class="fa-solid fa-plus me-1"></i> New Bot</button>
+    </header>
+    <section class="mb-4">
+      <div class="d-flex flex-column flex-md-row gap-2">
+        <input id="searchInput" class="form-control" placeholder="Search by name or ID... (CTR +K)" />
+        <select id="sortSelect" class="form-select">
+          <option value="updated_desc">Recently edited first</option>
+          <option value="created_desc">New to old</option>
+          <option value="created_asc">Old to new</option>
+          <option value="name_asc">A to Z</option>
+          <option value="name_desc">Z to A</option>
+        </select>
+      </div>
+    </section>
+    <section class="bb-grid" id="botsGrid">
+      <!-- Bots will be rendered here -->
+    </section>
+  </main>
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+    <div class="spinner-border text-info" role="status" aria-label="Loading"></div>
+  </div>
+  <!-- Toast -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 2100">
+    <div id="toast" class="toast align-items-center text-bg-dark border-0" role="status" aria-live="polite" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toastBody">Hello</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+  <!-- API Key Modal -->
+  <div class="modal fade" id="apiKeyModal" tabindex="-1" aria-labelledby="apiKeyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bb-card">
+        <div class="modal-header">
+          <h5 class="modal-title" id="apiKeyModalLabel">
+            <i class="fa-solid fa-key me-2 text-info"></i> Enter your API Key
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btnCloseModal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2 small text-secondary">Paste the API key for Bots.Business. It will be saved in local storage on this device.</p>
+          <label for="apiKeyInput" class="form-label">API Key</label>
+          <textarea id="apiKeyInput" class="form-control" rows="3" placeholder="Paste your API key here..."></textarea>
+          <div class="form-text text-danger d-none" id="apiKeyError">Invalid API key. Please check and try again.</div>
+        </div>
+        <div class="modal-footer">
+          <button id="btnSaveKey" type="button" class="btn btn-info">
+            <i class="fa-solid fa-floppy-disk me-2"></i> Save & Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Confirmation Modal -->
+  <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bb-card">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmModalLabel">Confirm Action</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="confirmBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button id="btnConfirm" type="button" class="btn btn-danger">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- New Bot Modal -->
+  <div class="modal fade" id="newBotModal" tabindex="-1" aria-labelledby="newBotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bb-card">
+        <div class="modal-header">
+          <h5 class="modal-title" id="newBotModalLabel">
+            <i class="fa-solid fa-robot me-2 text-info"></i> Create New Bot
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="botName" class="form-label">Bot Name</label>
+            <input type="text" id="botName" class="form-control" placeholder="Enter bot name...">
+          </div>
+          <div class="mb-3">
+            <label for="botToken" class="form-label">Bot Token</label>
+            <input type="text" id="botToken" class="form-control" placeholder="Enter bot token...">
+          </div>
+          <div class="form-text text-danger d-none" id="newBotError">Error creating bot. Please check fields and try again.</div>
+        </div>
+        <div class="modal-footer">
+          <button id="btnCreateBot" type="button" class="btn btn-info">
+            <i class="fa-solid fa-plus me-2"></i> Create
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Edit Bot Modal -->
+  <div class="modal fade" id="editBotModal" tabindex="-1" aria-labelledby="editBotModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bb-card">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editBotModalLabel">
+            <i class="fa-solid fa-edit me-2 text-info"></i> Edit Bot
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="editBotName" class="form-label">Bot Name</label>
+            <input type="text" id="editBotName" class="form-control" placeholder="Enter bot name...">
+          </div>
+          <div class="mb-3">
+            <label for="editBotToken" class="form-label">Bot Token</label>
+            <input type="text" id="editBotToken" class="form-control" placeholder="Enter bot token...">
+          </div>
+          <div class="form-text text-danger d-none" id="editBotError">Error updating bot. Please check fields and try again.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button id="btnSaveEdit" type="button" class="btn btn-info">
+            <i class="fa-solid fa-floppy-disk me-2"></i> Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+  <script>
+    const STORAGE_NAME = "bb_api_key";
+    const API_BOTS_URL = "https://appapi.bots.business/v1/bots";
+    let botsData = [];
+    let confirmCallback = null;
+    let currentEditBotId = null;
+    function setStorage(name, value) {
+      localStorage.setItem(name, value);
+    }
+    function getStorage(name) {
+      return localStorage.getItem(name);
+    }
+    function deleteStorage(name) {
+      localStorage.removeItem(name);
+    }
+    function showToast(message) {
+      const el = document.getElementById("toast");
+      document.getElementById("toastBody").textContent = message;
+      const toast = bootstrap.Toast.getOrCreateInstance(el, { delay: 2500 });
+      toast.show();
+    }
+    function showLoading(show) {
+      document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
+    }
+    function setTheme(mode) {
+      document.documentElement.setAttribute("data-bs-theme", mode);
+      localStorage.setItem("bb_theme", mode);
+      document.getElementById("iconSun").classList.toggle("d-none", mode !== "light");
+      document.getElementById("iconMoon").classList.toggle("d-none", mode === "light");
+    }
+    function initTheme() {
+      const saved = localStorage.getItem("bb_theme");
+      setTheme(saved || "dark");
+    }
+    async function fetchWithKey(url, options = {}) {
+      const apiKey = getStorage(STORAGE_NAME);
+      if (!apiKey) throw new Error("NO_KEY");
+      const fullUrl = `${url}?api_key=${encodeURIComponent(apiKey)}`;
+      const resp = await fetch(fullUrl, options);
+      if (!resp.ok) {
+        const data = await resp.json();
+        if (data.errors) throw new Error("INVALID_KEY");
+        throw new Error("ERROR");
+      }
+      return resp.json();
+    }
+    function sortBots(bots, sortBy) {
+      return bots.slice().sort((a, b) => {
+        if (sortBy === "updated_desc") return new Date(b.updated_at) - new Date(a.updated_at);
+        if (sortBy === "created_desc") return new Date(b.created_at) - new Date(a.created_at);
+        if (sortBy === "created_asc") return new Date(a.created_at) - new Date(b.created_at);
+        if (sortBy === "name_asc") return a.name.localeCompare(b.name);
+        if (sortBy === "name_desc") return b.name.localeCompare(a.name);
+        return 0;
+      });
+    }
+    function filterBots(bots, query) {
+      const lowerQuery = query.toLowerCase();
+      return bots.filter(bot => bot.name.toLowerCase().includes(lowerQuery) || String(bot.id).includes(lowerQuery));
+    }
+    function maskKey(key) {
+      if (!key) return "—";
+      const start = key.slice(0, 20);
+      const end = key.slice(-20);
+      return start + "••••" + end;
+    }
+    function renderBots(bots) {
+      const grid = document.getElementById("botsGrid");
+      grid.innerHTML = "";
+      if (bots.length === 0) {
+        grid.innerHTML = '<p class="text-secondary col-12-md">No bots found.</p>';
+        return;
+      }
+      bots.forEach(bot => {
+        const card = document.createElement("article");
+        card.className = "bb-card p-3 col-12-md col-4-md";
+        const statusBadge = bot.status === "works" ? '<span class="badge text-bg-success">Working</span>' : '<span class="badge text-bg-danger">Stopped</span>';
+        const toggleAction = bot.status === "works" ? "stop" : "start";
+        const toggleText = bot.status === "works" ? "Stop" : "Start";
+        const toggleIcon = bot.status === "works" ? "fa-stop" : "fa-play";
+        const createdAt = new Date(bot.created_at).toLocaleString();
+        card.innerHTML = `
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h5 class="mb-0">${bot.name}</h5>
+            ${statusBadge}
+          </div>
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <small class="text-secondary">ID: ${bot.id}</small>
+            <button class="btn btn-outline-info btn-sm copy-btn copy-id" data-copy="${bot.id}"><i class="fa-solid fa-copy"></i></button>
+          </div>
+          <div class="mb-2">
+            <small class="text-secondary">Created at: ${createdAt}</small>
+          </div>
+          <div class="mb-3">
+            <div class="text-secondary small">Deploy Key</div>
+            <div class="d-flex align-items-center">
+              <div class="mono small p-2 rounded border flex-grow-1" style="word-break: break-all;">${maskKey(bot.rsa_public_key)}</div>
+              <button class="btn btn-outline-info btn-sm copy-btn copy-key ms-2" data-copy="${bot.rsa_public_key || ''}"><i class="fa-solid fa-copy"></i></button>
+            </div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm edit-btn" data-bot-id="${bot.id}"><i class="fa-solid fa-edit me-1"></i> Edit</button>
+            <button class="btn btn-outline-secondary btn-sm commands-btn" data-bot-id="${bot.id}"><i class="fa-solid fa-terminal me-1"></i> Commands</button>
+            <button class="btn btn-outline-warning btn-sm toggle-btn" data-bot-id="${bot.id}" data-action="${toggleAction}"><i class="fa-solid ${toggleIcon} me-1"></i> ${toggleText}</button>
+            <button class="btn btn-outline-danger btn-sm delete-btn" data-bot-id="${bot.id}"><i class="fa-solid fa-trash me-1"></i> Delete</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+    function refreshBots() {
+      const searchQuery = document.getElementById("searchInput").value;
+      const sortBy = document.getElementById("sortSelect").value;
+      let filtered = filterBots(botsData, searchQuery);
+      let sorted = sortBots(filtered, sortBy);
+      renderBots(sorted);
+    }
+    async function loadBots() {
+      showLoading(true);
+      try {
+        botsData = await fetchWithKey(API_BOTS_URL);
+        refreshBots();
+        showToast("Bots loaded");
+      } catch (err) {
+        if (err.message === "NO_KEY" || err.message === "INVALID_KEY") {
+          openKeyModal();
+        } else {
+          showToast("Failed to load bots");
+        }
+      } finally {
+        showLoading(false);
+      }
+    }
+    async function toggleBotStatus(botId, action) {
+      showLoading(true);
+      try {
+        const status = action === "stop" ? "start_stopping" : "start_launch";
+        const updatedBot = await fetchWithKey(`${API_BOTS_URL}/${botId}/status`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status })
+        });
+        const index = botsData.findIndex(b => b.id === botId);
+        if (index !== -1) botsData[index] = updatedBot;
+        refreshBots();
+        showToast(`Bot ${action}ed`);
+      } catch {
+        showToast("Failed to toggle status");
+      } finally {
+        showLoading(false);
+      }
+    }
+    async function deleteBot(botId) {
+      showLoading(true);
+      try {
+        await fetchWithKey(`${API_BOTS_URL}/${botId}`, { method: "DELETE" });
+        botsData = botsData.filter(b => b.id !== botId);
+        refreshBots();
+        showToast("Bot deleted");
+      } catch {
+        showToast("Failed to delete bot");
+      } finally {
+        showLoading(false);
+      }
+    }
+    async function createBot(name, token) {
+      showLoading(true);
+      try {
+        const newBot = await fetchWithKey(API_BOTS_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, token })
+        });
+        botsData.push(newBot);
+        refreshBots();
+        showToast("Bot created");
+        return true;
+      } catch {
+        showToast("Failed to create bot");
+        return false;
+      } finally {
+        showLoading(false);
+      }
+    }
+    async function updateBot(botId, name, token) {
+      showLoading(true);
+      try {
+        const apiKey = getStorage(STORAGE_NAME);
+        const url = `https://appapi.bots.business/v2/bots/${botId}?api_key=${encodeURIComponent(apiKey)}`;
+        const resp = await fetch(url, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, token, csv_url: null, git_remote: null })
+        });
+        if (!resp.ok) {
+          const data = await resp.json();
+          throw new Error("ERROR");
+        }
+        const updatedBot = await resp.json();
+        const index = botsData.findIndex(b => b.id === botId);
+        if (index !== -1) botsData[index] = updatedBot;
+        refreshBots();
+        showToast("Bot updated");
+        return true;
+      } catch {
+        showToast("Failed to update bot");
+        return false;
+      } finally {
+        showLoading(false);
+      }
+    }
+    function showConfirm(message, callback) {
+      document.getElementById("confirmBody").textContent = message;
+      const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("confirmModal"));
+      confirmCallback = callback;
+      modal.show();
+    }
+    let apiKeyModal;
+    function openKeyModal() {
+      document.getElementById("apiKeyInput").value = getStorage(STORAGE_NAME) || "";
+      document.getElementById("apiKeyError").classList.add("d-none");
+      apiKeyModal = bootstrap.Modal.getOrCreateInstance(document.getElementById("apiKeyModal"));
+      apiKeyModal.show();
+    }
+    async function trySaveKey(key) {
+      setStorage(STORAGE_NAME, key);
+      await loadBots();
+      return true; // Assume success if no throw
+    }
+    let newBotModal;
+    function openNewBotModal() {
+      document.getElementById("botName").value = "";
+      document.getElementById("botToken").value = "";
+      document.getElementById("newBotError").classList.add("d-none");
+      newBotModal = bootstrap.Modal.getOrCreateInstance(document.getElementById("newBotModal"));
+      newBotModal.show();
+    }
+    function openEditModal(botId) {
+      const bot = botsData.find(b => b.id === botId);
+      if (!bot) {
+        showToast("Bot not found");
+        return;
+      }
+      document.getElementById("editBotName").value = bot.name || "";
+      document.getElementById("editBotToken").value = bot.token || "";
+      document.getElementById("editBotError").classList.add("d-none");
+      currentEditBotId = botId;
+      const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById("editBotModal"));
+      modal.show();
+    }
+    document.addEventListener("DOMContentLoaded", async () => {
+      initTheme();
+      document.getElementById("btnTheme").addEventListener("click", () => {
+        const current = document.documentElement.getAttribute("data-bs-theme");
+        setTheme(current === "light" ? "dark" : "light");
+      });
+      document.getElementById("btnChangeKey").addEventListener("click", openKeyModal);
+      document.getElementById("btnSaveKey").addEventListener("click", async () => {
+        const key = document.getElementById("apiKeyInput").value.trim();
+        if (!key) {
+          document.getElementById("apiKeyError").textContent = "Please enter your API key.";
+          document.getElementById("apiKeyError").classList.remove("d-none");
+          return;
+        }
+        document.getElementById("apiKeyError").classList.add("d-none");
+        const ok = await trySaveKey(key);
+        if (ok) {
+          bootstrap.Modal.getInstance(document.getElementById("apiKeyModal")).hide();
+        } else {
+          document.getElementById("apiKeyError").textContent = "Invalid API key. Please check and try again.";
+          document.getElementById("apiKeyError").classList.remove("d-none");
+        }
+      });
+      document.getElementById("btnClearKey").addEventListener("click", () => {
+        deleteStorage(STORAGE_NAME);
+        showToast("API key cleared");
+        openKeyModal();
+      });
+      document.getElementById("searchInput").addEventListener("input", refreshBots);
+      document.getElementById("sortSelect").addEventListener("change", refreshBots);
+      document.getElementById("btnNewBot").addEventListener("click", openNewBotModal);
+      document.getElementById("btnCreateBot").addEventListener("click", async () => {
+        const name = document.getElementById("botName").value.trim();
+        const token = document.getElementById("botToken").value.trim();
+        if (!name || !token) {
+          document.getElementById("newBotError").textContent = "Please fill in both name and token.";
+          document.getElementById("newBotError").classList.remove("d-none");
+          return;
+        }
+        document.getElementById("newBotError").classList.add("d-none");
+        const ok = await createBot(name, token);
+        if (ok) {
+          bootstrap.Modal.getInstance(document.getElementById("newBotModal")).hide();
+        } else {
+          document.getElementById("newBotError").textContent = "Error creating bot. Please check and try again.";
+          document.getElementById("newBotError").classList.remove("d-none");
+        }
+      });
+      document.getElementById("btnSaveEdit").addEventListener("click", async () => {
+        const name = document.getElementById("editBotName").value.trim();
+        const token = document.getElementById("editBotToken").value.trim();
+        if (!name || !token) {
+          document.getElementById("editBotError").textContent = "Please fill in both name and token.";
+          document.getElementById("editBotError").classList.remove("d-none");
+          return;
+        }
+        document.getElementById("editBotError").classList.add("d-none");
+        const ok = await updateBot(currentEditBotId, name, token);
+        if (ok) {
+          bootstrap.Modal.getInstance(document.getElementById("editBotModal")).hide();
+        } else {
+          document.getElementById("editBotError").textContent = "Error updating bot. Please check fields and try again.";
+          document.getElementById("editBotError").classList.remove("d-none");
+        }
+      });
+      document.getElementById("botsGrid").addEventListener("click", async e => {
+        if (e.target.classList.contains("toggle-btn") || e.target.parentElement.classList.contains("toggle-btn")) {
+          const btn = e.target.classList.contains("toggle-btn") ? e.target : e.target.parentElement;
+          const botId = parseInt(btn.dataset.botId);
+          const action = btn.dataset.action;
+          showConfirm(`Are you sure you want to ${action} this bot?`, () => toggleBotStatus(botId, action));
+        } else if (e.target.classList.contains("delete-btn") || e.target.parentElement.classList.contains("delete-btn")) {
+          const btn = e.target.classList.contains("delete-btn") ? e.target : e.target.parentElement;
+          const botId = parseInt(btn.dataset.botId);
+          showConfirm("Are you sure you want to delete this bot?", () => deleteBot(botId));
+        } else if (e.target.classList.contains("edit-btn") || e.target.parentElement.classList.contains("edit-btn")) {
+          const btn = e.target.classList.contains("edit-btn") ? e.target : e.target.parentElement;
+          const botId = parseInt(btn.dataset.botId);
+          openEditModal(botId);
+        } else if (e.target.classList.contains("commands-btn") || e.target.parentElement.classList.contains("commands-btn")) {
+          const btn = e.target.classList.contains("commands-btn") ? e.target : e.target.parentElement;
+          const botId = parseInt(btn.dataset.botId);
+          window.location.href = `edit.html?botid=${botId}`;
+        } else if (e.target.classList.contains("copy-id") || e.target.parentElement.classList.contains("copy-id")) {
+          const btn = e.target.classList.contains("copy-id") ? e.target : e.target.parentElement;
+          const text = btn.dataset.copy;
+          try { await navigator.clipboard.writeText(text); showToast("ID copied"); } catch { showToast("Copy failed"); }
+        } else if (e.target.classList.contains("copy-key") || e.target.parentElement.classList.contains("copy-key")) {
+          const btn = e.target.classList.contains("copy-key") ? e.target : e.target.parentElement;
+          const text = btn.dataset.copy;
+          try { await navigator.clipboard.writeText(text); showToast("Deploy key copied"); } catch { showToast("Copy failed"); }
+        }
+      });
+      document.getElementById("btnConfirm").addEventListener("click", () => {
+        if (confirmCallback) confirmCallback();
+        bootstrap.Modal.getInstance(document.getElementById("confirmModal")).hide();
+        confirmCallback = null;
+      });
+      const existingKey = getStorage(STORAGE_NAME);
+      if (!existingKey) {
+        openKeyModal();
+      } else {
+        await loadBots();
+      }
+    });
+   
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+       const input = document.getElementById("searchInput");
+       window.scrollTo({ top: 0, behavior: "smooth" });
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }
+  });
+  </script>
+</body>
+</html>

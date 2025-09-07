@@ -1,0 +1,989 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My BB — Commands</title>
+  
+  <!-- Google font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Leckerli+One&display=swap" rel="stylesheet">
+  <!-- Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" />
+  <!-- CodeMirror Core + Themes + Addons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/ayu-mirage.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/ttcn.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/searchcursor.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.9/beautify.min.js"></script>
+  <style>
+    :root {
+      --bb-primary: #0dcaf0;
+      --bb-accent: #20c997;
+      --bb-neutral-0: #ffffff;
+      --bb-neutral-900: #0b0f12;
+      --bb-muted: #6c757d;
+    }
+    body { min-height: 100vh; }
+    .bb-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      backdrop-filter: blur(8px);
+    }
+    [data-bs-theme="light"] .bb-card {
+      background: rgba(255,255,255,0.9);
+      border-color: rgba(0,0,0,0.06);
+    }
+    .bb-section-title { letter-spacing: .2px; }
+    .bb-muted { color: var(--bb-muted); }
+    .navbar .brand-dot {
+      width: 25px; height: 25px; display: inline-block;
+      margin-right: .5rem;
+    }
+    .form-control:focus, .btn:focus {
+      box-shadow: 0 0 0 .25rem rgba(13,202,240,.25);
+      border-color: var(--bb-primary);
+    }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .loading-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.4);
+      display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(2px);
+    }
+    [data-bs-theme="light"] .loading-overlay { background: rgba(255,255,255,.6); }
+    /* Folder chips */
+    .folder-chip {
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.04);
+      border-radius: 999px;
+      padding: .35rem .75rem;
+      font-size: .9rem;
+      cursor: pointer;
+      white-space: nowrap;
+      user-select: none;
+    }
+    [data-bs-theme="light"] .folder-chip {
+      background: rgba(0,0,0,.03);
+      border-color: rgba(0,0,0,.08);
+    }
+    .folder-chip.active {
+      background: var(--bb-primary);
+      color: #0b0f12;
+      border-color: var(--bb-primary);
+    }
+    .folder-chip i { margin-right: .35rem; }
+    /* Command list */
+    .cmd-card .cmd-title { font-weight: 600; }
+    .cmd-card .cmd-meta { font-size: .85rem; color: var(--bb-muted); }
+    /* Ensure Bootstrap modals always stack above the code editor */
+    .editor-wrap { z-index: 1500; }
+    .modal { z-index: 1700 !important; }
+    .modal-backdrop { z-index: 1690 !important; }
+    .modal-open #editorWrap { pointer-events: none; }
+    /* Alias chips inside modal */
+    .alias-chip {
+      display: inline-flex; align-items: center; gap: .35rem;
+      padding: .2rem .5rem; border-radius: 999px;
+      background: rgba(13,202,240,.12); border: 1px solid rgba(13,202,240,.35);
+      margin: .2rem .25rem 0 0; font-size: .85rem;
+    }
+    .alias-chip button {
+      border: 0; background: transparent; padding: 0; line-height: 1;
+      color: inherit; cursor: pointer;
+    }
+    /* Code editor overlay */
+    .editor-wrap {
+      position: fixed; inset: 56px 0 0 0; /* keep navbar visible */
+      display: none; z-index: 1500;
+      background: var(--bs-body-bg);
+    }
+    .editor-wrap.active { display: block; }
+    .editor-toolbar {
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: .5rem; display: flex; gap: .5rem; align-items: center; justify-content: space-between;
+      background: rgba(255,255,255,.04);
+    }
+    [data-bs-theme="light"] .editor-toolbar {
+      background: rgba(0,0,0,.03);
+      border-color: rgba(0,0,0,.08);
+    }
+    .CodeMirror {
+      height: calc(100vh - 56px - 56px);
+      font-size: 14px;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .navbar-brand {font-family: "Leckerli One", cursive; color: var(--bb-primary) ;}
+    /* Editor Search Panel (VSCode/cPanel-like) */
+    .editor-search {
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: .5rem .75rem;
+      display: none;
+      gap: .5rem;
+      align-items: center;
+      background: rgba(255,255,255,.03);
+    }
+    [data-bs-theme="light"] .editor-search {
+      background: rgba(0,0,0,.02);
+      border-color: rgba(0,0,0,.08);
+    }
+    .editor-search.active { display: flex; flex-wrap: wrap; }
+    .editor-search .form-check { margin-right: .5rem; }
+    .editor-search .btn-group { flex-wrap: wrap; gap: .5rem; }
+    /* Unsaved indicator */
+    .unsaved-dot {
+      width: 8px; height: 8px; border-radius: 999px;
+      background: #dc3545; margin-left: .35rem; display: inline-block;
+      box-shadow: 0 0 8px rgba(220,53,69,.8);
+    }
+    .btn-unsaved { border-color: #dc3545 !important; }
+    /* Search clear button in command search */
+    .search-wrap { position: relative; }
+    #btnClearSearch {
+      position: absolute;
+      right: .5rem;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg bg-body border-bottom sticky-top">
+    <div class="container-fluid">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary me-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#bbSidebar" aria-controls="bbSidebar" aria-label="Open sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <img src="assets/triangle-logo.svg" class="brand-dot" alt="" type="image/svg+xml" width="100" height="100">
+        <a class="navbar-brand fw-semibold" href="index.html">My BB</a>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <!-- Removed Back to bots per request -->
+        <button id="btnChangeKey" class="btn btn-outline-info">
+          <i class="fa-solid fa-key me-1"></i> API Key
+        </button>
+        <button id="btnTheme" class="btn btn-outline-secondary" aria-label="Toggle theme">
+          <i class="fa-solid fa-sun d-none" id="iconSun"></i>
+          <i class="fa-solid fa-moon" id="iconMoon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+  <!-- SIDEBAR -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="bbSidebar" aria-labelledby="bbSidebarLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="bbSidebarLabel">
+        <i class="fa-solid fa-robot me-2"></i> My BB
+      </h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column gap-2">
+      <a class="btn btn-outline-primary" href="account.html"><i class="fa-solid fa-user me-2"></i>Profile</a>
+      <a class="btn btn-outline-primary" href="index.html" rel="noopener"><i class="fa-solid fa-robot me-2"></i>Bots</a>
+      <a class="btn btn-outline-primary" href="https://docs.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-book me-2"></i>Documentation</a>
+      <a class="btn btn-outline-primary" href="https://app.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-screwdriver-wrench me-2"></i>App Console</a>
+      <a class="btn btn-outline-primary" href="https://status.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-signal me-2"></i>Status</a>
+      <hr />
+      <button id="btnClearKey" class="btn btn-outline-danger"><i class="fa-solid fa-trash me-2"></i>Clear API Key</button>
+      <div class="text-center bb-muted mt-3">
+        Made with ❤ by <a href="https://t.me/bottercc" rel="noopener" style="text-decoration: none;">Botter</a>
+      </div>
+    </div>
+  </div>
+  <!-- MAIN -->
+  <main class="container py-4">
+    <header class="mb-3 d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="h3 bb-section-title text-balance">
+          <i class="fa-solid fa-terminal me-2 text-info"></i> Commands
+        </h1>
+        <p class="bb-muted mb-0">Create, search, edit, and code your bot commands.</p>
+      </div>
+      <button id="btnNewCommand" class="btn btn-info"><i class="fa-solid fa-plus me-1"></i> Command</button>
+    </header>
+    <!-- Search -->
+    <section class="mb-3 search-wrap">
+      <input id="searchInput" class="form-control pe-5" placeholder="Search commands or aliases… (Ctrl/Cmd + K)" />
+      <button id="btnClearSearch" class="btn btn-sm btn-outline-secondary d-none" type="button" aria-label="Clear search">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </section>
+    <!-- Folder chips -->
+    <section class="mb-3 d-flex flex-wrap align-items-center gap-2" id="foldersBar"></section>
+    <!-- Commands list -->
+    <section id="commandsList" class="d-flex flex-column gap-2"></section>
+  </main>
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+    <div class="spinner-border text-info" role="status" aria-label="Loading"></div>
+  </div>
+  <!-- Toast -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index:2100">
+    <div id="toast" class="toast align-items-center text-bg-dark border-0" role="status" aria-live="polite" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toastBody">Hello</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+  <!-- API Key Modal -->
+  <div class="modal fade" id="apiKeyModal" tabindex="-1" aria-labelledby="apiKeyModalLabel" style="z-index: 1501;" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bb-card">
+        <div class="modal-header">
+          <h5 class="modal-title" id="apiKeyModalLabel">
+            <i class="fa-solid fa-key me-2 text-info"></i> Enter your API Key
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btnCloseModal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-2 small text-secondary">Paste the API key for Bots.Business. It will be saved in local storage on this device.</p>
+          <label for="apiKeyInput" class="form-label">API Key</label>
+          <textarea id="apiKeyInput" class="form-control" rows="3" placeholder="Paste your API key here..."></textarea>
+          <div class="form-text text-danger d-none" id="apiKeyError">Invalid API key. Please check and try again.</div>
+        </div>
+        <div class="modal-footer">
+          <button id="btnSaveKey" type="button" class="btn btn-info">
+            <i class="fa-solid fa-floppy-disk me-2"></i> Save & Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- New/Edit Command Modal -->
+  <div class="modal fade" id="commandModal" tabindex="-1" aria-labelledby="commandModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content bb-card">
+        <div class="modal-header">
+          <h5 class="modal-title" id="commandModalLabel"><i class="fa-solid fa-plus me-2 text-info"></i> New Command</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Command</label>
+              <input type="text" id="cmdCommand" class="form-control" placeholder="/start">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Group IDs (comma separated)</label>
+              <input type="text" id="cmdGroups" class="form-control" placeholder="-100123,-100456">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Aliases (press comma to add)</label>
+              <input type="text" id="aliasInput" class="form-control" placeholder="help, ❤ Help">
+              <div id="aliasChips" class="mt-2"></div>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Answer (up to 4096 chars)</label>
+              <textarea id="cmdAnswer" class="form-control" rows="3" maxlength="4096" placeholder="Plain text answer"></textarea>
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Reply Keyboard</label>
+              <textarea id="cmdKeyboard" class="form-control" rows="2" placeholder="Contact, Reach out
+Support"></textarea>
+              <div class="form-text">Comma = same row, newline = next row</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Folder</label>
+              <select id="cmdFolder" class="form-select"></select>
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Help (<= 200 chars)</label>
+              <input type="text" id="cmdHelp" class="form-control" maxlength="200">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Auto retry time (ms)</label>
+              <input type="number" id="cmdAutoRetry" class="form-control" min="0" step="100">
+            </div>
+            <div class="col-12 d-flex align-items-center gap-2">
+              <input class="form-check-input" type="checkbox" id="cmdNeedReply">
+              <label for="cmdNeedReply" class="form-check-label">Wait for answer</label>
+            </div>
+          </div>
+          <div class="form-text text-danger d-none mt-2" id="cmdError"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button id="btnSaveCommand" type="button" class="btn btn-info">
+            <i class="fa-solid fa-floppy-disk me-1"></i> Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Confirm Modal -->
+  <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bb-card">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="confirmBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button id="btnConfirm" type="button" class="btn btn-danger">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Code Editor Overlay -->
+  <div class="editor-wrap" id="editorWrap" aria-hidden="true">
+    <div class="editor-toolbar">
+      <div class="d-flex align-items-center gap-2">
+        <button id="btnCloseEditor" class="btn btn-outline-secondary btn-sm" title="Close editor">
+          <i class="fa-solid fa-xmark"></i>
+          <span id="unsavedDot" class="unsaved-dot d-none" title="Unsaved changes"></span>
+        </button>
+        <span class="mono small" id="editorCmdLabel">/command</span>
+      </div>
+      <div class="d-flex gap-2">
+        <button id="btnEditCommand" class="btn btn-outline-primary btn-sm" title="Edit command meta"><i class="fa-solid fa-pen-to-square me-1"></i>Edit</button>
+        <button id="btnSearch" class="btn btn-outline-secondary btn-sm" title="Search / Replace"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button id="btnUndo" class="btn btn-outline-secondary btn-sm" title="Undo (Ctrl/Cmd+Z)"><i class="fa-solid fa-rotate-left"></i></button>
+        <button id="btnRedo" class="btn btn-outline-secondary btn-sm" title="Redo (Ctrl/Cmd+Y)"><i class="fa-solid fa-rotate-right"></i></button>
+        <button id="btnFormat" class="btn btn-outline-secondary btn-sm" title="Format code"><i class="fa-solid fa-wand-magic-sparkles"></i></button>
+        <button id="btnSaveCode" class="btn btn-info btn-sm" title="Save (Ctrl/Cmd+S)"><i class="fa-solid fa-floppy-disk me-1"></i>Save</button>
+      </div>
+    </div>
+    <!-- VSCode/cPanel-like Search Panel -->
+    <div class="editor-search" id="editorSearch">
+      <input type="text" id="findInput" class="form-control form-control-sm" placeholder="Find" style="max-width: 260px;">
+      <input type="text" id="replaceInput" class="form-control form-control-sm" placeholder="Replace" style="max-width: 260px;">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="optCase">
+        <label class="form-check-label" for="optCase">Aa</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="optWord">
+        <label class="form-check-label" for="optWord">Word</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="optRegex">
+        <label class="form-check-label" for="optRegex">.*</label>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-outline-secondary btn-sm" id="btnFindPrev" title="Find Previous"><i class="fa-solid fa-arrow-left"></i></button>
+        <button class="btn btn-outline-secondary btn-sm" id="btnFindNext" title="Find Next"><i class="fa-solid fa-arrow-right"></i></button>
+        <button class="btn btn-outline-secondary btn-sm" id="btnDoReplace" title="Replace current">Replace</button>
+        <button class="btn btn-outline-secondary btn-sm" id="btnReplaceAll" title="Replace all">Replace All</button>
+        <button class="btn btn-outline-secondary btn-sm" id="btnCloseSearch" title="Close">Close</button>
+      </div>
+    </div>
+    <textarea id="codeArea"></textarea>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+  <script>
+    const STORAGE_NAME = "bb_api_key";
+    const API_BASE = "https://appapi.bots.business/v2";
+    const qs = new URLSearchParams(location.search);
+    const botId = qs.get("botid");
+    let commands = [];
+    let folders = [];
+    let selectedFolderId = null;
+    let editor = null;
+    let currentEditingCommandId = null;
+    let isEditingExisting = false;
+    let pendingConfirm = null;
+    // ---- Unsaved tracking ----
+    let lastSavedCode = ""; // baseline after open + after successful save
+    let isEditorDirty = false; // computed: editor.getValue() !== lastSavedCode
+    function updateDirtyUI(dirty) {
+      isEditorDirty = !!dirty;
+      const dot = document.getElementById("unsavedDot");
+      const btnClose = document.getElementById("btnCloseEditor");
+      if (!dot || !btnClose) return;
+      dot.classList.toggle("d-none", !dirty);
+      btnClose.classList.toggle("btn-unsaved", dirty);
+      btnClose.title = dirty ? "Unsaved changes — close editor" : "Close editor";
+    }
+    function setCleanBaseline() {
+      lastSavedCode = editor ? editor.getValue() : "";
+      updateDirtyUI(false);
+    }
+    // Native browser leave guard
+    window.addEventListener("beforeunload", (e) => {
+      if (isEditorDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    });
+    /* ---------- utils ---------- */
+    function setStorage(name, value) { localStorage.setItem(name, value); }
+    function getStorage(name) { return localStorage.getItem(name); }
+    function deleteStorage(name) { localStorage.removeItem(name); }
+    function showToast(message) {
+      const el = document.getElementById("toast");
+      document.getElementById("toastBody").textContent = message;
+      const toast = bootstrap.Toast.getOrCreateInstance(el, { delay: 2500 });
+      toast.show();
+    }
+    function showLoading(show) {
+      document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
+    }
+    function setTheme(mode) {
+      document.documentElement.setAttribute("data-bs-theme", mode);
+      localStorage.setItem("bb_theme", mode);
+      document.getElementById("iconSun").classList.toggle("d-none", mode !== "light");
+      document.getElementById("iconMoon").classList.toggle("d-none", mode === "light");
+      if (editor) editor.setOption("theme", mode === "light" ? "ttcn" : "ayu-mirage");
+    }
+    function initTheme() {
+      const saved = localStorage.getItem("bb_theme");
+      setTheme(saved || "dark");
+    }
+    async function fetchJson(url, options = {}) {
+      const resp = await fetch(url, options);
+      const data = await resp.json().catch(() => ({}));
+      return { ok: resp.ok, data };
+    }
+    function ensureBotOrRedirect(errObj) {
+      if (!botId) { location.href = "bots.html"; return true; }
+      if (errObj && errObj.error === "Bot not found") { location.href = "bots.html"; return true; }
+      return false;
+    }
+    /* ---------- data ---------- */
+    async function loadAll() {
+      const key = getStorage(STORAGE_NAME);
+      if (!key) { openKeyModal(); return; }
+      if (ensureBotOrRedirect()) return;
+      showLoading(true);
+      try {
+        const [cmdRes, foldRes] = await Promise.all([
+          fetchJson(`${API_BASE}/bots/${encodeURIComponent(botId)}/commands?api_key=${encodeURIComponent(key)}`),
+          fetchJson(`${API_BASE}/bots/${encodeURIComponent(botId)}/commands_folders?api_key=${encodeURIComponent(key)}`)
+        ]);
+        if (!cmdRes.ok && ensureBotOrRedirect(cmdRes.data)) return;
+        commands = Array.isArray(cmdRes.data) ? cmdRes.data : [];
+        folders = Array.isArray(foldRes.data) ? foldRes.data : [];
+        renderFolders();
+        renderCommands();
+        fillFolderSelect();
+        showToast("Commands loaded");
+      } catch {
+        showToast("Failed to load commands");
+      } finally {
+        showLoading(false);
+      }
+    }
+    /* ---------- render ---------- */
+    function renderFolders() {
+      const bar = document.getElementById("foldersBar");
+      bar.innerHTML = "";
+      const mkChip = (title, id, iconClass = "fa-folder", classes = "") => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `folder-chip ${classes}`.trim();
+        btn.dataset.folderId = id === null ? "" : String(id);
+        if ((id === null && selectedFolderId === null) || (id !== null && selectedFolderId === id)) btn.classList.add("active");
+        btn.innerHTML = `<i class="fa-solid ${iconClass}"></i>${title}`;
+        btn.addEventListener("click", () => { selectedFolderId = id; renderFolders(); renderCommands(); });
+        return btn;
+      };
+      bar.appendChild(mkChip("All commands", null, "fa-layer-group"));
+      folders.forEach(f => bar.appendChild(mkChip(f.title, f.id)));
+      const manage = mkChip(" Manage folders", "manage", "fa-gear");
+      manage.classList.add("btn", "btn-outline-warning"); manage.classList.remove("folder-chip");
+      manage.addEventListener("click", () => location.href = `folders.html?botid=${encodeURIComponent(botId)}`);
+      bar.appendChild(manage);
+    }
+    function formatDate(s) { try { return new Date(s).toLocaleString(); } catch { return "—"; } }
+    function renderCommands() {
+      const list = document.getElementById("commandsList");
+      list.innerHTML = "";
+      const q = document.getElementById("searchInput").value.trim().toLowerCase();
+      const filtered = commands.filter(c => {
+        if (selectedFolderId !== null && String(c.commands_folder_id || "") !== String(selectedFolderId)) return false;
+        if (!q) return true;
+        const inCmd = (c.command || "").toLowerCase().includes(q);
+        const inAliases = Array.isArray(c.aliases) ? c.aliases.some(a => (a.command || "").toLowerCase().includes(q)) : false;
+        return inCmd || inAliases;
+      });
+      // toggle clear button
+      document.getElementById("btnClearSearch").classList.toggle("d-none", !q);
+      if (filtered.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "text-secondary";
+        empty.textContent = "No commands found.";
+        list.appendChild(empty);
+        return;
+      }
+      filtered.forEach(c => {
+        const card = document.createElement("article");
+        card.className = "bb-card p-3 cmd-card";
+        const aliasesText = Array.isArray(c.aliases) && c.aliases.length ? "<br>aliases: " + c.aliases.map(a => a.command).join(", ") : "";
+        const folderTitle = (folders.find(f => f.id === c.commands_folder_id)?.title) || "—";
+        card.innerHTML = `
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <div class="cmd-title">${c.command || "—"}</div>
+              <div class="cmd-meta">Folder: ${folderTitle}${aliasesText}</div>
+              <div class="small mt-1 text-secondary">Updated: ${formatDate(c.updated_at)}</div>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-primary btn-sm btn-edit" data-id="${c.id}"><i class="fa-solid fa-pen-to-square me-1"></i>Edit</button>
+              <button class="btn btn-outline-info btn-sm btn-code" data-id="${c.id}"><i class="fa-solid fa-code me-1"></i>Code</button>
+              <button class="btn btn-outline-danger btn-sm btn-del" data-id="${c.id}"><i class="fa-solid fa-trash me-1"></i>Delete</button>
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+    function fillFolderSelect() {
+      const sel = document.getElementById("cmdFolder");
+      sel.innerHTML = "";
+      const optNone = document.createElement("option");
+      optNone.value = ""; optNone.textContent = "— No folder —";
+      sel.appendChild(optNone);
+      folders.forEach(f => {
+        const o = document.createElement("option");
+        o.value = String(f.id); o.textContent = f.title;
+        sel.appendChild(o);
+      });
+    }
+    /* ---------- alias chips ---------- */
+    let aliasSet = new Set();
+    function resetAliasUI(initial = []) {
+      aliasSet = new Set(initial.filter(Boolean).map(s => s.trim()).filter(s => s));
+      renderAliasChips();
+      document.getElementById("aliasInput").value = "";
+    }
+    function renderAliasChips() {
+      const wrap = document.getElementById("aliasChips");
+      wrap.innerHTML = "";
+      aliasSet.forEach(a => {
+        const chip = document.createElement("span");
+        chip.className = "alias-chip";
+        chip.innerHTML = `${a}<button aria-label="Remove" title="Remove">&times;</button>`;
+        chip.querySelector("button").addEventListener("click", () => { aliasSet.delete(a); renderAliasChips(); });
+        wrap.appendChild(chip);
+      });
+    }
+    function handleAliasInput(e) {
+      if ((e.inputType === "insertText" && e.data === ",") || e.key === ",") {
+        e.preventDefault?.();
+        const raw = document.getElementById("aliasInput").value;
+        const parts = raw.split(",").map(s => s.trim()).filter(Boolean);
+        parts.forEach(p => aliasSet.add(p));
+        renderAliasChips();
+        document.getElementById("aliasInput").value = "";
+      }
+    }
+    /* ---------- modal open/save ---------- */
+    function openCommandModal(mode, commandObj = null) {
+      isEditingExisting = mode === "edit";
+      document.getElementById("commandModalLabel").innerHTML =
+        (isEditingExisting ? '<i class="fa-solid fa-pen-to-square me-2 text-info"></i> Edit Command'
+                           : '<i class="fa-solid fa-plus me-2 text-info"></i> New Command');
+      document.getElementById("cmdError").classList.add("d-none");
+      if (isEditingExisting && commandObj) {
+        document.getElementById("cmdCommand").value = commandObj.command || "";
+        document.getElementById("cmdGroups").value = commandObj.group || "";
+        document.getElementById("cmdAnswer").value = commandObj.answer || "";
+        document.getElementById("cmdKeyboard").value = commandObj.keyboard_body || "";
+        document.getElementById("cmdHelp").value = commandObj.help || "";
+        document.getElementById("cmdAutoRetry").value = commandObj.auto_retry_time ?? "";
+        document.getElementById("cmdNeedReply").checked = !!commandObj.need_reply;
+        document.getElementById("cmdFolder").value = commandObj.commands_folder_id ? String(commandObj.commands_folder_id) : "";
+        const aliasArr = Array.isArray(commandObj.aliases) ? commandObj.aliases.map(a => a.command) : [];
+        resetAliasUI(aliasArr);
+        currentEditingCommandId = commandObj.id;
+      } else {
+        document.getElementById("cmdCommand").value = "";
+        document.getElementById("cmdGroups").value = "";
+        document.getElementById("cmdAnswer").value = "";
+        document.getElementById("cmdKeyboard").value = "";
+        document.getElementById("cmdHelp").value = "";
+        document.getElementById("cmdAutoRetry").value = "";
+        document.getElementById("cmdNeedReply").checked = false;
+        document.getElementById("cmdFolder").value = "";
+        resetAliasUI([]);
+        currentEditingCommandId = null;
+      }
+      bootstrap.Modal.getOrCreateInstance(document.getElementById("commandModal")).show();
+    }
+    function buildPayloadFromCommandObj(cmd, override = {}) {
+      const aliasesStr = Array.isArray(cmd.aliases) ? cmd.aliases.map(a => a.command).join(", ") : (cmd.aliases || "");
+      return {
+        command: cmd.command || "",
+        aliases: ("aliases" in override) ? override.aliases : aliasesStr,
+        answer: ("answer" in override) ? override.answer : (cmd.answer || ""),
+        group: ("group" in override) ? override.group : (cmd.group || ""),
+        help: ("help" in override) ? override.help : (cmd.help ?? null),
+        keyboard_body: ("keyboard_body" in override) ? override.keyboard_body : (cmd.keyboard_body || ""),
+        commands_folder_id: ("commands_folder_id" in override)
+                              ? override.commands_folder_id
+                              : (cmd.commands_folder_id ?? null),
+        auto_retry_time: ("auto_retry_time" in override)
+                          ? override.auto_retry_time
+                          : (cmd.auto_retry_time ?? ""),
+        need_reply: ("need_reply" in override) ? override.need_reply : !!cmd.need_reply,
+        bjs_code: ("bjs_code" in override) ? override.bjs_code : (cmd.code || cmd.bjs_code || "")
+      };
+    }
+    async function saveCommandFromModal() {
+      const key = getStorage(STORAGE_NAME);
+      if (!key) { openKeyModal(); return; }
+      const base = {
+        command: document.getElementById("cmdCommand").value.trim(),
+        aliases: Array.from(aliasSet).join(", "),
+        answer: document.getElementById("cmdAnswer").value,
+        group: document.getElementById("cmdGroups").value.trim(),
+        help: document.getElementById("cmdHelp").value || null,
+        keyboard_body: document.getElementById("cmdKeyboard").value,
+        commands_folder_id: document.getElementById("cmdFolder").value ? Number(document.getElementById("cmdFolder").value) : null,
+        auto_retry_time: document.getElementById("cmdAutoRetry").value === "" ? "" : Number(document.getElementById("cmdAutoRetry").value),
+        need_reply: document.getElementById("cmdNeedReply").checked
+      };
+      if (base.answer && base.answer.length > 4096) { showFormError("cmdError", "Answer exceeds 4096 characters."); return; }
+      // Include bjs_code when editing commands only
+      let payload = { ...base, bjs_code: "" };
+      if (isEditingExisting && currentEditingCommandId) {
+        const existing = commands.find(c => c.id === currentEditingCommandId) || {};
+        const codeFromEditor = (document.getElementById("editorWrap").classList.contains("active") && editor) ? editor.getValue() : (existing.code || existing.bjs_code || "");
+        payload.bjs_code = codeFromEditor;
+      }
+      showLoading(true);
+      try {
+        const url = isEditingExisting
+          ? `${API_BASE}/bots/${encodeURIComponent(botId)}/commands/${encodeURIComponent(currentEditingCommandId)}?api_key=${encodeURIComponent(key)}&page=1&q=&folder_id&without_folders=false`
+          : `${API_BASE}/bots/${encodeURIComponent(botId)}/commands?api_key=${encodeURIComponent(key)}`;
+        const res = await fetchJson(url, {
+          method: isEditingExisting ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const err = res.data && res.data.error ? res.data.error : "Failed to save command";
+          showFormError("cmdError", err); return;
+        }
+        const saved = res.data;
+        const idx = commands.findIndex(c => c.id === saved.id);
+        if (idx >= 0) commands[idx] = saved; else commands.push(saved);
+        renderCommands();
+        bootstrap.Modal.getInstance(document.getElementById("commandModal")).hide();
+        showToast(isEditingExisting ? "Command updated" : "Command created");
+        // Mark clean if editor is open for this command
+        if (isEditingExisting && editor && document.getElementById("editorWrap").classList.contains("active")) {
+          lastSavedCode = editor.getValue();
+          updateDirtyUI(false);
+        }
+      } catch {
+        showFormError("cmdError", "Request failed");
+      } finally {
+        showLoading(false);
+      }
+    }
+    function showFormError(elId, msg) {
+      const el = document.getElementById(elId);
+      el.textContent = msg; el.classList.remove("d-none");
+    }
+    /* ---------- delete ---------- */
+    function confirmDelete(commandId, commandName) {
+      document.getElementById("confirmBody").textContent = `Delete ${commandName}? This cannot be undone.`;
+      pendingConfirm = async () => {
+        const key = getStorage(STORAGE_NAME);
+        if (!key) { openKeyModal(); return; }
+        showLoading(true);
+        try {
+          const res = await fetchJson(`${API_BASE}/bots/${encodeURIComponent(botId)}/commands/${encodeURIComponent(commandId)}?api_key=${encodeURIComponent(key)}`, { method: "DELETE" });
+          if (!res.ok) {
+            const msg = res.data && res.data.error ? res.data.error : "Failed to delete";
+            showToast(msg);
+          } else {
+            commands = commands.filter(c => c.id !== commandId);
+            renderCommands();
+            showToast("Command deleted");
+          }
+        } catch {
+          showToast("Delete failed");
+        } finally {
+          showLoading(false);
+        }
+      };
+      bootstrap.Modal.getOrCreateInstance(document.getElementById("confirmModal")).show();
+    }
+    /* ---------- editor ---------- */
+    function openEditor(commandObj) {
+      const wrap = document.getElementById("editorWrap");
+      document.getElementById("editorCmdLabel").textContent = commandObj.command || "—";
+      wrap.classList.add("active");
+      const ta = document.getElementById("codeArea");
+      ta.value = commandObj.code || commandObj.bjs_code || "";
+      if (!editor) {
+        editor = CodeMirror.fromTextArea(ta, {
+          lineNumbers: true,
+          mode: "javascript",
+          matchBrackets: true,
+          autoCloseBrackets: true,
+          indentUnit: 2,
+          tabSize: 2,
+          indentWithTabs: false,
+          lineWrapping: true, // Enable line wrapping
+          theme: document.documentElement.getAttribute("data-bs-theme") === "light" ? "ttcn" : "ayu-mirage"
+        });
+      } else {
+        editor.setValue(ta.value);
+      }
+      editor.refresh();
+      editor.focus();
+      setTimeout(() => editor.refresh(), 50);
+      currentEditingCommandId = commandObj.id;
+      // Bind toolbar Edit to open modal for the same command
+      document.getElementById("btnEditCommand").onclick = () => openCommandModal("edit", commandObj);
+      // Set clean baseline and bind change detector once
+      setCleanBaseline();
+      if (!editor._dirtyBound) {
+        editor.on("change", () => {
+          const current = editor.getValue();
+          updateDirtyUI(current !== lastSavedCode);
+        });
+        editor._dirtyBound = true;
+      }
+    }
+    async function saveCode() {
+      const key = getStorage(STORAGE_NAME);
+      if (!key) { openKeyModal(); return; }
+      if (!currentEditingCommandId) return;
+      const idx = commands.findIndex(c => c.id === currentEditingCommandId);
+      const existing = idx >= 0 ? commands[idx] : {};
+      // Send ALL fields + bjs_code when saving code
+      const payload = buildPayloadFromCommandObj(existing, { bjs_code: editor ? editor.getValue() : (existing.code || existing.bjs_code || "") });
+      showLoading(true);
+      try {
+        const res = await fetchJson(`${API_BASE}/bots/${encodeURIComponent(botId)}/commands/${encodeURIComponent(currentEditingCommandId)}?api_key=${encodeURIComponent(key)}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const msg = res.data && res.data.error ? res.data.error : "Failed to save code";
+          showToast(msg); return;
+        }
+        const saved = res.data;
+        if (idx >= 0) commands[idx] = saved;
+        showToast("Code + command saved");
+        // Mark clean after successful save
+        if (editor) {
+          lastSavedCode = editor.getValue();
+          updateDirtyUI(false);
+        }
+      } catch {
+        showToast("Code save failed");
+      } finally {
+        showLoading(false);
+      }
+    }
+    /* ---------- editor search panel (VSCode/cPanel-like) ---------- */
+    function openSearchPanel() {
+      const panel = document.getElementById("editorSearch");
+      panel.classList.add("active");
+      const find = document.getElementById("findInput");
+      if (editor) {
+        const sel = editor.getSelection();
+        if (sel) find.value = sel;
+      }
+      find.focus(); find.select();
+    }
+    function closeSearchPanel() {
+      document.getElementById("editorSearch").classList.remove("active");
+      if (editor) editor.focus();
+    }
+    function getSearchCursor(findStr, fromStart, dir = 1) {
+      const isRegex = document.getElementById("optRegex").checked;
+      const caseSensitive = document.getElementById("optCase").checked;
+      const wholeWord = document.getElementById("optWord").checked;
+      let query = findStr;
+      if (!isRegex) query = findStr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      if (wholeWord) query = `\\b${query}\\b`;
+      const flags = caseSensitive ? "g" : "gi";
+      const re = new RegExp(query, flags);
+      const doc = editor.getDoc();
+      const startPos = fromStart
+        ? (dir === 1 ? { line: 0, ch: 0 } : { line: doc.lastLine(), ch: doc.getLine(doc.lastLine()).length })
+        : editor.getCursor(dir === 1 ? "to" : "from");
+      return editor.getSearchCursor(re, startPos);
+    }
+    function findNext(prev = false) {
+      if (!editor) return;
+      const findStr = document.getElementById("findInput").value;
+      if (!findStr) return;
+      const cur = getSearchCursor(findStr, false, prev ? -1 : 1);
+      if (cur.find(prev)) {
+        editor.setSelection(cur.from(), cur.to());
+        editor.scrollIntoView({ from: cur.from(), to: cur.to(), margin: 80 }, 100);
+      } else {
+        // wrap
+        const wrapCur = getSearchCursor(findStr, true, prev ? -1 : 1);
+        if (wrapCur.find(prev)) {
+          editor.setSelection(wrapCur.from(), wrapCur.to());
+          editor.scrollIntoView({ from: wrapCur.from(), to: wrapCur.to(), margin: 80 }, 100);
+        }
+      }
+    }
+    function doReplace() {
+      if (!editor) return;
+      const findStr = document.getElementById("findInput").value;
+      const replStr = document.getElementById("replaceInput").value ?? "";
+      if (!findStr) return;
+      const sel = editor.getSelection();
+      if (sel) {
+        const caseSensitive = document.getElementById("optCase").checked;
+        const isRegex = document.getElementById("optRegex").checked;
+        const wholeWord = document.getElementById("optWord").checked;
+        let q = findStr;
+        if (!isRegex) q = findStr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        if (wholeWord) q = `\\b${q}\\b`;
+        const re = new RegExp(`^${q}$`, caseSensitive ? "" : "i");
+        if (re.test(sel)) {
+          editor.replaceSelection(replStr, "around");
+          findNext(false);
+          return;
+        }
+      }
+      findNext(false);
+      if (editor.getSelection()) {
+        editor.replaceSelection(replStr, "around");
+      }
+    }
+    function replaceAll() {
+      if (!editor) return;
+      const findStr = document.getElementById("findInput").value;
+      const replStr = document.getElementById("replaceInput").value ?? "";
+      if (!findStr) return;
+      const cur = getSearchCursor(findStr, true, 1);
+      editor.operation(() => {
+        while (cur.findNext()) {
+          cur.replace(replStr);
+        }
+      });
+    }
+    /* ---------- key modal ---------- */
+    let apiKeyModal;
+    function openKeyModal() {
+      document.getElementById("apiKeyInput").value = getStorage(STORAGE_NAME) || "";
+      document.getElementById("apiKeyError").classList.add("d-none");
+      apiKeyModal = bootstrap.Modal.getOrCreateInstance(document.getElementById("apiKeyModal"));
+      apiKeyModal.show();
+    }
+    async function trySaveKey(key) {
+      setStorage(STORAGE_NAME, key);
+      await loadAll();
+      return true;
+    }
+    /* ---------- events ---------- */
+    document.addEventListener("DOMContentLoaded", async () => {
+      initTheme();
+      if (!botId) { location.href = "bots.html"; return; }
+      document.getElementById("btnTheme").addEventListener("click", () => {
+        const current = document.documentElement.getAttribute("data-bs-theme");
+        setTheme(current === "light" ? "dark" : "light");
+      });
+      document.getElementById("btnChangeKey").addEventListener("click", openKeyModal);
+      document.getElementById("btnSaveKey").addEventListener("click", async () => {
+        const key = document.getElementById("apiKeyInput").value.trim();
+        if (!key) {
+          document.getElementById("apiKeyError").textContent = "Please enter your API key.";
+          document.getElementById("apiKeyError").classList.remove("d-none");
+          return;
+        }
+        document.getElementById("apiKeyError").classList.add("d-none");
+        const ok = await trySaveKey(key);
+        if (ok) bootstrap.Modal.getInstance(document.getElementById("apiKeyModal")).hide();
+      });
+      document.getElementById("btnClearKey").addEventListener("click", () => {
+        deleteStorage(STORAGE_NAME);
+        showToast("API key cleared");
+        openKeyModal();
+      });
+      // Commands search input + clear button
+      const searchInput = document.getElementById("searchInput");
+      const btnClearSearch = document.getElementById("btnClearSearch");
+      const toggleClear = () => btnClearSearch.classList.toggle("d-none", !searchInput.value.trim());
+      searchInput.addEventListener("input", () => { toggleClear(); renderCommands(); });
+      btnClearSearch.addEventListener("click", () => {
+        searchInput.value = "";
+        toggleClear();
+        renderCommands();
+        searchInput.focus();
+      });
+      // Keyboard shortcuts
+      document.addEventListener("keydown", (e) => {
+        const isMeta = e.ctrlKey || e.metaKey;
+        // Global quick search for commands list
+        if (isMeta && e.key.toLowerCase() === "k") {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          searchInput.focus(); searchInput.select();
+          return;
+        }
+        // Editor shortcuts
+        if (document.getElementById("editorWrap").classList.contains("active")) {
+          if (isMeta && e.key.toLowerCase() === "s") { e.preventDefault(); saveCode(); }
+          if (isMeta && e.key.toLowerCase() === "f") { e.preventDefault(); openSearchPanel(); }
+          if (isMeta && e.key.toLowerCase() === "h") { e.preventDefault(); openSearchPanel(); document.getElementById("replaceInput").focus(); }
+        }
+      });
+      // Alias field
+      document.getElementById("aliasInput").addEventListener("keydown", handleAliasInput);
+      document.getElementById("aliasInput").addEventListener("input", handleAliasInput);
+      // New command
+      document.getElementById("btnNewCommand").addEventListener("click", () => openCommandModal("new"));
+      // Commands list actions
+      document.getElementById("commandsList").addEventListener("click", (e) => {
+        const btn = e.target.closest("button"); if (!btn) return;
+        const id = Number(btn.dataset.id);
+        const cmd = commands.find(c => c.id === id); if (!cmd) return;
+        if (btn.classList.contains("btn-edit")) openCommandModal("edit", cmd);
+        if (btn.classList.contains("btn-code")) openEditor(cmd);
+        if (btn.classList.contains("btn-del")) confirmDelete(id, cmd.command);
+      });
+      // Modal save
+      document.getElementById("btnSaveCommand").addEventListener("click", saveCommandFromModal);
+      // Confirm modal
+      document.getElementById("btnConfirm").addEventListener("click", () => {
+        if (pendingConfirm) pendingConfirm();
+        bootstrap.Modal.getInstance(document.getElementById("confirmModal")).hide();
+        pendingConfirm = null;
+      });
+      // Editor toolbar
+      document.getElementById("btnCloseEditor").addEventListener("click", () => {
+        if (isEditorDirty) {
+          const ok = confirm("You have unsaved changes. Close the editor?");
+          if (!ok) return;
+        }
+        document.getElementById("editorWrap").classList.remove("active");
+      });
+      document.getElementById("btnUndo").addEventListener("click", () => editor && editor.undo());
+      document.getElementById("btnRedo").addEventListener("click", () => editor && editor.redo && editor.redo());
+      document.getElementById("btnFormat").addEventListener("click", () => {
+        if (!editor) return;
+        const formatted = js_beautify(editor.getValue(), { indent_size: 2, space_in_empty_paren: false });
+        editor.setValue(formatted);
+      });
+      document.getElementById("btnSaveCode").addEventListener("click", saveCode);
+      // Editor search panel
+      document.getElementById("btnSearch").addEventListener("click", openSearchPanel);
+      document.getElementById("btnCloseSearch").addEventListener("click", closeSearchPanel);
+      document.getElementById("btnFindNext").addEventListener("click", () => findNext(false));
+      document.getElementById("btnFindPrev").addEventListener("click", () => findNext(true));
+      document.getElementById("btnDoReplace").addEventListener("click", doReplace);
+      document.getElementById("btnReplaceAll").addEventListener("click", replaceAll);
+      // initial load
+      const existingKey = getStorage(STORAGE_NAME);
+      if (!existingKey) openKeyModal();
+      await loadAll();
+      // Initialize clear button state after initial render
+      (function initClearState(){ btnClearSearch.classList.toggle("d-none", !searchInput.value.trim()); })();
+    });
+  </script>
+</body>
+</html>
