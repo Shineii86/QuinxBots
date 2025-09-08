@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My BB — Install Libs</title>
+
+  <!-- Google font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Leckerli+One&display=swap" rel="stylesheet">
+  <!-- Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" />
+  <style>
+    :root {
+      --bb-primary: #0dcaf0;
+      --bb-accent: #20c997;
+      --bb-muted: #6c757d;
+    }
+    body { min-height: 100vh; }
+    .bb-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+    .navbar-brand {font-family: "Leckerli One", cursive; color: var(--bb-primary) ;}
+    /* YouTube-like grid */
+    .lib-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .lib-tile {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .lib-tile:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+    .thumb-wrap {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%; /* 16:9 ratio */
+      background: #111;
+      flex: 0 0 auto;
+    }
+    .thumb-wrap img {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    }
+    .tile-body {
+      padding: .6rem .75rem .9rem .75rem; display: flex; flex-direction: column; gap: .5rem;
+      min-height: 140px;
+    }
+    .lib-title { font-weight: 700; font-size: 1rem; margin-top: .25rem; }
+    .lib-desc {
+      color: #cfd8dc;
+      font-size: .9rem;
+      line-height: 1.2;
+      max-height: 3.2rem;
+      overflow: hidden;
+      white-space: pre-wrap;
+    }
+    .tile-meta { font-size: .85rem; color: var(--bb-muted); }
+    .tile-actions { margin-top: auto; display:flex; gap:.5rem; align-items:center; justify-content:space-between; }
+    .muted-small { font-size: .86rem; color: var(--bb-muted); }
+    .btn-install { min-width: 100px; }
+    .loading-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.4);
+      display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(2px);
+    }
+    .brand-dot { width:25px; height:25px; display:inline-block; margin-right:.5rem; }
+
+    /* current bot box below header (right side) */
+    .current-bot-box {
+      display:inline-block;
+      background: none;
+      border: none;
+      text-align:left;
+    }
+    .view-link {
+      display:inline-block;
+      text-decoration:none;
+      color: var(--bb-accent);
+      cursor:pointer;
+      font-weight:600;
+      margin-top:4px;
+    }
+    .view-link:hover { opacity:0.9; text-decoration:none; }
+
+    /* modal contrast fix - strong background for readability */
+    .modal-content.bb-card {
+      background: rgba(10,12,15,0.98) !important;
+      border: 1px solid rgba(255,255,255,0.06) !important;
+      color: #e6eef3;
+    }
+
+    /* light theme fixes */
+    [data-bs-theme="light"] .bb-card {
+      background: rgba(255,255,255,0.92);
+      border-color: rgba(0,0,0,0.06);
+    }
+    [data-bs-theme="light"] .lib-tile {
+      background: rgba(0,0,0,0.03);
+      border-color: rgba(0,0,0,0.06);
+    }
+    [data-bs-theme="light"] .lib-desc { color: #374151; }
+    [data-bs-theme="light"] .tile-meta { color: #6b7280; }
+    [data-bs-theme="light"] .muted-small { color: #6b7280; }
+    [data-bs-theme="light"] .modal-content.bb-card {
+      background: rgba(255,255,255,0.98) !important;
+      border: 1px solid rgba(0,0,0,0.06) !important;
+      color: #0b0f12;
+    }
+    [data-bs-theme="light"] .view-link { color: #0b5; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg bg-body border-bottom sticky-top">
+    <div class="container-fluid">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-outline-secondary me-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#bbSidebar" aria-controls="bbSidebar" aria-label="Open sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <img src="assets/triangle-logo.svg" class="brand-dot" alt="" width="25" height="25">
+        <a class="navbar-brand fw-semibold" href="index.html">My BB</a>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button id="btnChangeKey" class="btn btn-outline-info" title="Change API key">
+          <i class="fa-solid fa-key me-1"></i> API Key
+        </button>
+        <button id="btnTheme" class="btn btn-outline-secondary" aria-label="Toggle theme" title="Toggle theme">
+          <i class="fa-solid fa-sun d-none" id="iconSun"></i>
+          <i class="fa-solid fa-moon" id="iconMoon"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="bbSidebar" aria-labelledby="bbSidebarLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="bbSidebarLabel">
+        <i class="fa-solid fa-robot me-2"></i> My BB
+      </h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column gap-2">
+      <a class="btn btn-outline-primary" href="account.html"><i class="fa-solid fa-user me-2"></i>Profile</a>
+      <a class="btn btn-outline-primary" href="index.html" rel="noopener"><i class="fa-solid fa-robot me-2"></i>Bots</a>
+      <a class="btn btn-primary" rel="noopener"><i
+          class="fa-solid fa-boxes me-2"></i>Libraries</a>
+      <a class="btn btn-outline-primary" href="https://help.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-book me-2"></i>Documentation</a>
+      <a class="btn btn-outline-primary" href="https://app.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-screwdriver-wrench me-2"></i>App Console</a>
+      <a class="btn btn-outline-primary" href="https://status.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-signal me-2"></i>Status</a>
+
+      <hr />
+      <button id="btnClearKey" class="btn btn-outline-danger"><i class="fa-solid fa-trash me-2"></i>Clear API Key</button>
+      <div class="text-center bb-muted mt-3">Made with ❤ by <a href="https://t.me/bottercc" rel="noopener" style="text-decoration: none;">Botter</a></div>
+    </div>
+  </div>
+
+  <main class="container py-4">
+    <header class="mb-2 d-flex justify-content-between align-items-center">
+      <div>
+        <h1 class="h3 bb-section-title">
+          <i class="fa-solid fa-boxes me-2 text-info"></i> Install libraries
+        </h1>
+        <p class="bb-muted mb-0">Install libs from the store into your bot. Use <code>?botid=</code> to target a bot directly or select bots when needed.</p>
+        <div class="mb-3">
+      <div id="currentBotBox" class="current-bot-box bb-card">
+        <!-- populated by JS -->
+      </div>
+    </div>
+      </div>
+    </header>
+
+
+    <section class="bb-card">
+      <div id="libsContainer" class="lib-grid"></div>
+      <div id="noLibs" class="text-secondary mt-2 d-none">No libs found.</div>
+    </section>
+  </main>
+
+  <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
+    <div class="spinner-border text-info" role="status" aria-label="Loading"></div>
+  </div>
+
+  <!-- Toast -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index:2100">
+    <div id="toast" class="toast align-items-center text-bg-dark border-0" role="status" aria-live="polite" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toastBody">Hello</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bots modal (re-used for install multi-select or view single-select) -->
+  <div class="modal fade" id="botsModal" tabindex="-1" aria-labelledby="botsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content bb-card">
+        <div class="modal-header">
+          <h5 class="modal-title" id="botsModalLabel"><i class="fa-solid fa-list me-2 text-info"></i>Select bots</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-secondary" id="botsModalHint">Select one or more bots.</p>
+          <div id="botsList" class="list-group"></div>
+          <div id="noBots" class="text-secondary mt-2 d-none">No bots available.</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button id="btnBotsPrimary" class="btn btn-info">Install to selected</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Read more modal -->
+  <div class="modal fade" id="readModal" tabindex="-1" aria-labelledby="readModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content bb-card">
+        <div class="modal-header">
+          <h5 class="modal-title" id="readModalLabel"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <img id="readImage" src="" alt="" style="width:100%;max-height:360px;object-fit:cover;border-radius:6px;margin-bottom:.75rem;">
+          <pre id="readDescription" style="white-space:pre-wrap; background:transparent; border:0; padding:0; margin:0;"></pre>
+        </div>
+        <div class="modal-footer">
+          <div class="me-auto muted-small" id="readInstalls"></div>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Installed libs modal -->
+  <div class="modal fade" id="installedModal" tabindex="-1" aria-labelledby="installedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bb-card">
+        <div class="modal-header">
+          <h5 class="modal-title" id="installedModalLabel"><i class="fa-solid fa-box-open me-2 text-info"></i> Installed libs</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="installedList" class="list-group"></div>
+          <div id="noInstalled" class="text-secondary mt-2 d-none">No libs installed for this bot.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm delete installed lib -->
+  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bb-card">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm delete</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="confirmDeleteBody"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button id="btnConfirmDelete" class="btn btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Key Modal (injected dynamically) -->
+
+  <script>
+    const STORAGE_NAME = "bb_api_key";
+    const THEME_KEY = "bb_theme";
+    const API_BASE = "https://appapi.bots.business/v2";
+    const qs = new URLSearchParams(location.search);
+    const urlBotId = qs.get("botid");
+    let currentBotId = urlBotId ? String(urlBotId) : null;
+    let libs = [];
+    let bots = [];
+    let botsModalMode = 'install'; // 'install' or 'view'
+    let selectedLibToInstall = null;
+    let installTargetBotIds = new Set();
+    let selectedBotForView = null;
+    let pendingDeleteLib = null;
+
+    function showLoading(show) {
+      document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
+    }
+    function showToast(message) {
+      const el = document.getElementById("toast");
+      document.getElementById("toastBody").textContent = message;
+      const toast = bootstrap.Toast.getOrCreateInstance(el, { delay: 3000 });
+      toast.show();
+    }
+    function getKey() { return localStorage.getItem(STORAGE_NAME); }
+    function setKey(k) { localStorage.setItem(STORAGE_NAME, k); }
+    function clearKey() { localStorage.removeItem(STORAGE_NAME); }
+
+    async function fetchJson(url, opts = {}) {
+      try {
+        const r = await fetch(url, opts);
+        const data = await r.json().catch(() => null);
+        return { ok: r.ok, data };
+      } catch (e) {
+        return { ok: false, data: null, error: e.message };
+      }
+    }
+
+    function readablyCount(n) {
+      try {
+        if (n >= 1000000) return (n/1000000).toFixed(1) + "M";
+        if (n >= 1000) return (n/1000).toFixed(1) + "k";
+        return String(n);
+      } catch { return String(n); }
+    }
+
+    function escapeHtml(s) {
+      if (s === null || s === undefined) return "";
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function truncate(text, max) {
+      if (!text) return "";
+      if (text.length <= max) return text;
+      return text.slice(0, max-1).trim() + "…";
+    }
+
+    // Render libs as YouTube-like tiles
+    function renderLibs() {
+      const container = document.getElementById("libsContainer");
+      container.innerHTML = "";
+      if (!libs || libs.length === 0) {
+        document.getElementById("noLibs").classList.remove("d-none");
+        return;
+      }
+      document.getElementById("noLibs").classList.add("d-none");
+      libs.forEach(lib => {
+        const tile = document.createElement("div");
+        tile.className = "lib-tile";
+        tile.innerHTML = `
+          <div class="thumb-wrap">
+            <img src="${escapeHtml(lib.img_url || '')}" alt="${escapeHtml(lib.name)}" onerror="this.src='https://i.imgur.com/MPuABWf.png'">
+          </div>
+          <div class="tile-body">
+            <div class="lib-title" title="${escapeHtml(lib.name)}">${escapeHtml(lib.name)}</div>
+            <div class="lib-desc">${escapeHtml(truncate(lib.description || '', 280))}</div>
+            <div class="tile-meta">${readablyCount(lib.installations_count)} installs</div>
+            <div class="tile-actions">
+              <div>
+                <button class="btn btn-info btn-install" data-libid="${lib.id}"><i class="fa-solid fa-download me-1"></i>Install</button>
+                <button class="btn btn-outline-secondary btn-sm btn-read" data-libid="${lib.id}"><i class="fa-solid fa-book-open me-1"></i>Read more</button>
+              </div>
+              <div class="muted-small"> </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(tile);
+      });
+    }
+
+    // Load store libs
+    async function loadStoreLibs() {
+      const key = getKey();
+      if (!key) { openKeyModal(); return; }
+      showLoading(true);
+      const url = `${API_BASE}/store/libs?api_key=${encodeURIComponent(key)}`;
+      const res = await fetchJson(url);
+      showLoading(false);
+      if (!res.ok) { showToast("Failed to load libs"); return; }
+      libs = Array.isArray(res.data) ? res.data : [];
+      renderLibs();
+    }
+
+    // Load bots for selection
+    async function loadBots() {
+      const key = getKey();
+      if (!key) { openKeyModal(); return; }
+      showLoading(true);
+      const url = `${API_BASE}/bots?api_key=${encodeURIComponent(key)}`;
+      const res = await fetchJson(url);
+      showLoading(false);
+      if (!res.ok) { showToast("Failed to load bots"); return; }
+      bots = Array.isArray(res.data) ? res.data : [];
+      renderBotsList();
+    }
+
+    function renderBotsList() {
+      const wrap = document.getElementById("botsList");
+      wrap.innerHTML = "";
+      if (!bots || bots.length === 0) {
+        document.getElementById("noBots").classList.remove("d-none");
+        return;
+      }
+      document.getElementById("noBots").classList.add("d-none");
+      if (botsModalMode === 'install') {
+        document.getElementById("botsModalHint").textContent = "Select one or more bots to install into.";
+        document.getElementById("btnBotsPrimary").textContent = "Install to selected";
+        bots.forEach(b => {
+          const el = document.createElement("label");
+          el.className = "list-group-item d-flex align-items-center gap-3";
+          el.innerHTML = `
+            <input class="form-check-input me-2 bot-checkbox" type="checkbox" data-botid="${b.id}">
+            <div>
+              <div style="font-weight:600">${escapeHtml(b.name || ('bot:' + b.id))}</div>
+              <div class="small text-secondary">id: ${b.id}</div>
+            </div>
+          `;
+          wrap.appendChild(el);
+        });
+      } else {
+        document.getElementById("botsModalHint").textContent = "Select one bot to view installed libs.";
+        document.getElementById("btnBotsPrimary").textContent = "View installed";
+        bots.forEach(b => {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center bot-item";
+          item.dataset.botid = b.id;
+          item.dataset.botname = b.name || '';
+          item.innerHTML = `<div style="min-width:0"><div style="font-weight:600">${escapeHtml(b.name || ('bot:' + b.id))}</div><div class="small text-secondary">id: ${b.id}</div></div><div class="muted-small">select</div>`;
+          wrap.appendChild(item);
+        });
+        selectedBotForView = null;
+      }
+    }
+
+    // Install lib to a single bot (returns true/false)
+    async function installLibToBot(libId, botId) {
+      const key = getKey();
+      if (!key) { openKeyModal(); return false; }
+      showLoading(true);
+      const url = `${API_BASE}/bots/${encodeURIComponent(botId)}/libs?api_key=${encodeURIComponent(key)}`;
+      const res = await fetchJson(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lib_id: Number(libId) })
+      });
+      showLoading(false);
+      if (!res.ok) {
+        const msg = (res.data && res.data.error) ? res.data.error : (res.error || 'Install failed');
+        showToast(msg);
+        return false;
+      }
+      if (res.data && typeof res.data === 'object' && res.data.error) {
+        showToast(res.data.error);
+        return false;
+      }
+      return true;
+    }
+
+    // Get installed libs for a bot
+    async function loadInstalledLibs(botId) {
+      const key = getKey();
+      if (!key) { openKeyModal(); return null; }
+      showLoading(true);
+      const url = `${API_BASE}/bots/${encodeURIComponent(botId)}/libs?api_key=${encodeURIComponent(key)}`;
+      const res = await fetchJson(url);
+      showLoading(false);
+      if (!res.ok) { showToast("Failed to load installed libs"); return null; }
+      return Array.isArray(res.data) ? res.data : [];
+    }
+
+    // Delete installed lib
+    async function removeInstalledLib(botId, libId) {
+      const key = getKey();
+      if (!key) { openKeyModal(); return false; }
+      showLoading(true);
+      const url = `${API_BASE}/bots/${encodeURIComponent(botId)}/libs/${encodeURIComponent(libId)}?api_key=${encodeURIComponent(key)}`;
+      const res = await fetchJson(url, { method: "DELETE" });
+      showLoading(false);
+      if (!res.ok) {
+        const msg = (res.data && res.data.error) ? res.data.error : 'Delete failed';
+        showToast(msg);
+        return false;
+      }
+      return true;
+    }
+
+    // Populate the current-bot box below header (right side)
+    function setCurrentBotBox() {
+      const box = document.getElementById("currentBotBox");
+      box.innerHTML = "";
+      if (currentBotId) {
+        // show bot id (try to show bot name if we have it in bots[] cache)
+        const bot = bots.find(b => String(b.id) === String(currentBotId));
+        const name = bot ? (bot.name || ('#' + currentBotId)) : ('#' + currentBotId);
+        box.innerHTML = `<div style="font-weight:700">${escapeHtml(name)}</div><div><span class="view-link" id="viewInstalledBtn">View libs</span></div>`;
+        // attach click
+        const el = box.querySelector("#viewInstalledBtn");
+        el.addEventListener("click", async (ev) => {
+          ev.preventDefault();
+          const installed = await loadInstalledLibs(currentBotId);
+          showInstalledList(installed);
+          bootstrap.Modal.getOrCreateInstance(document.getElementById("installedModal")).show();
+        });
+      } else {
+        box.innerHTML = `<div style="font-weight:700">Select Bot</div><div class="small text-secondary">Click to choose a bot</div>`;
+        box.style.cursor = "pointer";
+        box.addEventListener("click", async () => {
+          botsModalMode = 'view';
+          await loadBots();
+          bootstrap.Modal.getOrCreateInstance(document.getElementById("botsModal")).show();
+        }, { once: true });
+      }
+    }
+
+    function openKeyModal() {
+      document.getElementById("apiKeyInput").value = getKey() || "";
+      document.getElementById("apiKeyError").classList.add("d-none");
+      bootstrap.Modal.getOrCreateInstance(document.getElementById("apiKeyModal")).show();
+    }
+
+    // Read more modal open
+    function openReadModal(lib) {
+      document.getElementById("readModalLabel").textContent = lib.name || "Details";
+      const img = document.getElementById("readImage");
+      img.src = lib.img_url || '';
+      img.onerror = function(){ this.src='https://i.imgur.com/MPuABWf.png' };
+      document.getElementById("readDescription").textContent = lib.description || '';
+      document.getElementById("readInstalls").textContent = `${readablyCount(lib.installations_count)} installs`;
+      bootstrap.Modal.getOrCreateInstance(document.getElementById("readModal")).show();
+    }
+
+    // show installed list helper
+    function showInstalledList(installed) {
+      const wrap = document.getElementById("installedList");
+      wrap.innerHTML = "";
+      if (!installed || installed.length === 0) {
+        document.getElementById("noInstalled").classList.remove("d-none");
+        return;
+      }
+      document.getElementById("noInstalled").classList.add("d-none");
+      installed.forEach(item => {
+        const el = document.createElement("div");
+        el.className = "list-group-item d-flex justify-content-between align-items-center";
+        el.innerHTML = `<div style="min-width:0"><div style="font-weight:600">${escapeHtml(item.name)}</div></div>
+          <div><button class="btn btn-sm btn-outline-danger btn-uninstall" data-libid="${item.id}"><i class="fa-solid fa-trash"></i></button></div>`;
+        wrap.appendChild(el);
+      });
+    }
+
+    // DOM bindings
+    document.addEventListener("DOMContentLoaded", () => {
+      // Insert API key modal (same pattern)
+      const apiKeyModalHtml = `
+        <div class="modal fade" id="apiKeyModal" tabindex="-1" aria-labelledby="apiKeyModalLabel" style="z-index: 1501;">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bb-card">
+              <div class="modal-header">
+                <h5 class="modal-title" id="apiKeyModalLabel"><i class="fa-solid fa-key me-2 text-info"></i> Enter your API Key</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btnCloseModal"></button>
+              </div>
+              <div class="modal-body">
+                <p class="mb-2 small text-secondary">Paste the API key for Bots.Business. It will be saved in local storage on this device.</p>
+                <label for="apiKeyInput" class="form-label">API Key</label>
+                <textarea id="apiKeyInput" class="form-control" rows="3" placeholder="Paste your API key here..."></textarea>
+                <div class="form-text text-danger d-none" id="apiKeyError">Invalid API key. Please check and try again.</div>
+              </div>
+              <div class="modal-footer">
+                <button id="btnSaveKey" type="button" class="btn btn-info"><i class="fa-solid fa-floppy-disk me-2"></i> Save & Continue</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML("beforeend", apiKeyModalHtml);
+
+      initTheme();
+
+      document.getElementById("btnTheme").addEventListener("click", () => {
+        const current = document.documentElement.getAttribute("data-bs-theme");
+        setTheme(current === "light" ? "dark" : "light");
+      });
+
+      document.getElementById("btnChangeKey").addEventListener("click", openKeyModal);
+      document.getElementById("btnClearKey").addEventListener("click", () => {
+        clearKey();
+        showToast("API key cleared");
+        openKeyModal();
+      });
+
+      // bots modal primary button behavior (mode dependent)
+      document.getElementById("btnBotsPrimary").addEventListener("click", async () => {
+        if (botsModalMode === 'install') {
+          const checkboxes = Array.from(document.querySelectorAll(".bot-checkbox"));
+          const selected = checkboxes.filter(cb => cb.checked).map(cb => cb.dataset.botid);
+          if (selected.length === 0) { showToast("Select at least one bot"); return; }
+          bootstrap.Modal.getOrCreateInstance(document.getElementById("botsModal")).hide();
+          for (const bId of selected) {
+            const ok = await installLibToBot(selectedLibToInstall, bId);
+            if (ok) showToast(`Installed to bot ${bId}`); else showToast(`Failed to install to ${bId}`);
+          }
+          selectedLibToInstall = null;
+          installTargetBotIds = new Set();
+        } else {
+          if (!selectedBotForView) { showToast("Select a bot to view installed libs"); return; }
+          bootstrap.Modal.getOrCreateInstance(document.getElementById("botsModal")).hide();
+          const installed = await loadInstalledLibs(selectedBotForView);
+          currentBotId = selectedBotForView;
+          await loadBots(); // refresh bots cache so we can show name in box
+          setCurrentBotBox();
+          showInstalledList(installed);
+          bootstrap.Modal.getOrCreateInstance(document.getElementById("installedModal")).show();
+          selectedBotForView = null;
+        }
+      });
+
+      // when bots list clicked in view mode, mark selected
+      document.getElementById("botsList").addEventListener("click", (e) => {
+        const item = e.target.closest(".bot-item");
+        if (!item) return;
+        document.querySelectorAll(".bot-item").forEach(it => it.classList.remove("active"));
+        item.classList.add("active");
+        selectedBotForView = item.dataset.botid;
+      });
+
+      // libs container click handler (install / read more)
+      document.getElementById("libsContainer").addEventListener("click", async (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        const libId = btn.dataset.libid;
+        if (!libId) return;
+        if (btn.classList.contains("btn-install")) {
+          if (currentBotId) {
+            const ok = await installLibToBot(libId, currentBotId);
+            if (ok) showToast("Installed to bot " + currentBotId);
+          } else {
+            botsModalMode = 'install';
+            selectedLibToInstall = libId;
+            installTargetBotIds = new Set();
+            await loadBots();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("botsModal")).show();
+          }
+        } else if (btn.classList.contains("btn-read")) {
+          const lib = libs.find(l => String(l.id) === String(libId));
+          if (lib) openReadModal(lib);
+        }
+      });
+
+      // installed modal uninstall handler
+      document.getElementById("installedList").addEventListener("click", (e) => {
+        const btn = e.target.closest("button.btn-uninstall");
+        if (!btn) return;
+        const libId = btn.dataset.libid;
+        pendingDeleteLib = libId;
+        document.getElementById("confirmDeleteBody").textContent = `Remove lib #${libId} from bot ${currentBotId}? This cannot be undone.`;
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("confirmDeleteModal")).show();
+      });
+
+      document.getElementById("btnConfirmDelete").addEventListener("click", async () => {
+        const libId = pendingDeleteLib;
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("confirmDeleteModal")).hide();
+        pendingDeleteLib = null;
+        const ok = await removeInstalledLib(currentBotId, libId);
+        if (ok) {
+          showToast("Removed");
+          const installed = await loadInstalledLibs(currentBotId);
+          showInstalledList(installed);
+        }
+      });
+
+      // bots modal checkbox change handler for install selection
+      document.getElementById("botsList").addEventListener("change", (e) => {
+        const cb = e.target.closest(".bot-checkbox");
+        if (!cb) return;
+        if (cb.checked) installTargetBotIds.add(cb.dataset.botid);
+        else installTargetBotIds.delete(cb.dataset.botid);
+      });
+
+      // API Key modal save
+      document.body.addEventListener("click", (e) => {
+        if (e.target && e.target.id === "btnSaveKey") {
+          const txt = document.getElementById("apiKeyInput").value.trim();
+          if (!txt) {
+            document.getElementById("apiKeyError").textContent = "Please enter your API key.";
+            document.getElementById("apiKeyError").classList.remove("d-none");
+            return;
+          }
+          setKey(txt);
+          bootstrap.Modal.getOrCreateInstance(document.getElementById("apiKeyModal")).hide();
+          loadStoreLibs();
+        }
+      });
+
+      // initial load
+      // preload bots so we can show name if botid exists
+      loadBots().finally(() => {
+        setCurrentBotBox();
+        loadStoreLibs();
+      });
+    });
+
+    // Theme functions
+    function setTheme(mode) {
+      document.documentElement.setAttribute("data-bs-theme", mode);
+      localStorage.setItem(THEME_KEY, mode);
+      document.getElementById("iconSun").classList.toggle("d-none", mode !== "light");
+      document.getElementById("iconMoon").classList.toggle("d-none", mode === "light");
+    }
+    function initTheme() {
+      const saved = localStorage.getItem(THEME_KEY) || "dark";
+      setTheme(saved);
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+</html>
