@@ -3,195 +3,451 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>My BB — Install Libs</title>
+  <title>Quinx Bot — Install Libraries</title>
 
-  <!-- Google font -->
+  <!-- Google fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Leckerli+One&display=swap" rel="stylesheet">
-  <!-- Bootstrap + Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" />
+  
   <style>
     :root {
-      --bb-primary: #0dcaf0;
-      --bb-accent: #20c997;
-      --bb-muted: #6c757d;
+      --quinx-primary: #8b5cf6;
+      --quinx-accent: #0ea5e9;
+      --quinx-surface: rgba(15, 23, 42, 0.7);
+      --quinx-card: rgba(30, 41, 59, 0.5);
+      --quinx-border: rgba(255, 255, 255, 0.1);
+      --quinx-text: #f8fafc;
+      --quinx-muted: #94a3b8;
+      --quinx-success: #10b981;
+      --quinx-danger: #ef4444;
+      --quinx-warning: #f59e0b;
     }
-    body { min-height: 100vh; }
-    .bb-card {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
+
+    body {
+      min-height: 100vh;
+      font-family: "Bricolage Grotesque", sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: var(--quinx-text);
+      background-attachment: fixed;
+    }
+
+    /* Glassmorphism Cards */
+    .quinx-card {
+      background: var(--quinx-card);
+      border: 1px solid var(--quinx-border);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .quinx-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    /* Navbar with glass effect */
+    .navbar {
+      background: rgba(15, 23, 42, 0.8) !important;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--quinx-border);
+    }
+
+    /* Sidebar with glass effect */
+    .offcanvas {
+      background: rgba(15, 23, 42, 0.9) !important;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-right: 1px solid var(--quinx-border);
+    }
+
+    /* Buttons with glass effect */
+    .btn-glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--quinx-text);
+      transition: all 0.3s ease;
+    }
+
+    .btn-glass:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--quinx-primary), #7c3aed);
+      border: none;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #7c3aed, var(--quinx-primary));
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-outline-primary {
+      border-color: var(--quinx-primary);
+      color: var(--quinx-primary);
+    }
+
+    .btn-outline-primary:hover {
+      background-color: var(--quinx-primary);
+      border-color: var(--quinx-primary);
+    }
+
+    /* Typography */
+    .quinx-section-title {
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--quinx-text), var(--quinx-muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .navbar-brand {
+      font-weight: 800;
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, var(--quinx-primary), var(--quinx-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Stats dashboard */
+    .stats-card {
+      background: var(--quinx-surface);
       border-radius: 12px;
-      padding: 1rem;
+      padding: 1.5rem;
+      border: 1px solid var(--quinx-border);
+      backdrop-filter: blur(10px);
     }
-    .navbar-brand {font-family: "Leckerli One", cursive; color: var(--bb-primary) ;}
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--quinx-primary), var(--quinx-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--quinx-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
     /* YouTube-like grid */
     .lib-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
     }
+    
     .lib-tile {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.04);
-      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--quinx-border);
+      border-radius: 12px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      transition: transform .12s ease, box-shadow .12s ease;
+      transition: all 0.3s ease;
     }
-    .lib-tile:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+    
+    .lib-tile:hover { 
+      transform: translateY(-5px); 
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3); 
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+    
     .thumb-wrap {
       position: relative;
       width: 100%;
       padding-bottom: 56.25%; /* 16:9 ratio */
-      background: #111;
+      background: #0f172a;
       flex: 0 0 auto;
     }
+    
     .thumb-wrap img {
-      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+      position: absolute; 
+      inset: 0; 
+      width: 100%; 
+      height: 100%; 
+      object-fit: cover;
     }
+    
     .tile-body {
-      padding: .6rem .75rem .9rem .75rem; display: flex; flex-direction: column; gap: .5rem;
-      min-height: 140px;
+      padding: 1rem; 
+      display: flex; 
+      flex-direction: column; 
+      gap: .75rem;
+      min-height: 160px;
     }
-    .lib-title { font-weight: 700; font-size: 1rem; margin-top: .25rem; }
+    
+    .lib-title { 
+      font-weight: 700; 
+      font-size: 1.1rem; 
+      margin-top: .25rem; 
+    }
+    
     .lib-desc {
-      color: #cfd8dc;
+      color: var(--quinx-muted);
       font-size: .9rem;
-      line-height: 1.2;
-      max-height: 3.2rem;
+      line-height: 1.4;
+      max-height: 4.2rem;
       overflow: hidden;
       white-space: pre-wrap;
     }
-    .tile-meta { font-size: .85rem; color: var(--bb-muted); }
-    .tile-actions { margin-top: auto; display:flex; gap:.5rem; align-items:center; justify-content:space-between; }
-    .muted-small { font-size: .86rem; color: var(--bb-muted); }
-    .btn-install { min-width: 100px; }
+    
+    .tile-meta { 
+      font-size: .85rem; 
+      color: var(--quinx-muted); 
+    }
+    
+    .tile-actions { 
+      margin-top: auto; 
+      display:flex; 
+      gap:.5rem; 
+      align-items:center; 
+      justify-content:space-between; 
+    }
+    
+    .muted-small { 
+      font-size: .86rem; 
+      color: var(--quinx-muted); 
+    }
+    
+    .btn-install { 
+      min-width: 100px; 
+    }
+
+    /* Form controls */
+    .form-control, .form-select {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--quinx-border);
+      color: var(--quinx-text);
+      border-radius: 8px;
+    }
+
+    .form-control:focus, .form-select:focus {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--quinx-primary);
+      box-shadow: 0 0 0 0.25rem rgba(139, 92, 246, 0.25);
+      color: var(--quinx-text);
+    }
+
+    /* Badges */
+    .badge {
+      font-weight: 600;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+    }
+
+    .badge-success {
+      background: linear-gradient(135deg, var(--quinx-success), #059669);
+    }
+
+    .badge-danger {
+      background: linear-gradient(135deg, var(--quinx-danger), #dc2626);
+    }
+
+    .badge-info {
+      background: linear-gradient(135deg, var(--quinx-accent), #0284c7);
+    }
+
+    /* Icons */
+    .material-icons {
+      vertical-align: middle;
+      font-size: 1.2em;
+    }
+
+    /* Loading overlay */
     .loading-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,.4);
-      display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(2px);
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(5px);
     }
-    .brand-dot { width:25px; height:25px; display:inline-block; margin-right:.5rem; }
 
-    /* current bot box below header (right side) */
+    /* Toast */
+    .toast {
+      background: var(--quinx-surface);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--quinx-border);
+      border-radius: 12px;
+    }
+
+    /* Current bot box */
     .current-bot-box {
-      display:inline-block;
-      background: none;
-      border: none;
-      text-align:left;
+      display: inline-block;
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      text-align: left;
+      margin-top: 0.5rem;
     }
+    
     .view-link {
-      display:inline-block;
-      text-decoration:none;
-      color: var(--bb-accent);
-      cursor:pointer;
-      font-weight:600;
-      margin-top:4px;
+      display: inline-block;
+      text-decoration: none;
+      color: var(--quinx-primary);
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 4px;
+      transition: all 0.3s ease;
     }
-    .view-link:hover { opacity:0.9; text-decoration:none; }
+    
+    .view-link:hover { 
+      opacity: 0.9; 
+      text-decoration: none;
+      color: var(--quinx-accent);
+    }
 
-    /* modal contrast fix - strong background for readability */
-    .modal-content.bb-card {
-      background: rgba(10,12,15,0.98) !important;
-      border: 1px solid rgba(255,255,255,0.06) !important;
-      color: #e6eef3;
+    /* Copyright section */
+    .copyright {
+      font-size: 0.875rem;
+      color: var(--quinx-muted);
+      text-align: center;
+      padding: 1.5rem 0;
     }
 
-    /* light theme fixes */
-    [data-bs-theme="light"] .bb-card {
-      background: rgba(255,255,255,0.92);
-      border-color: rgba(0,0,0,0.06);
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .lib-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .current-bot-box {
+        width: 100%;
+        text-align: center;
+      }
     }
-    [data-bs-theme="light"] .lib-tile {
-      background: rgba(0,0,0,0.03);
-      border-color: rgba(0,0,0,0.06);
-    }
-    [data-bs-theme="light"] .lib-desc { color: #374151; }
-    [data-bs-theme="light"] .tile-meta { color: #6b7280; }
-    [data-bs-theme="light"] .muted-small { color: #6b7280; }
-    [data-bs-theme="light"] .modal-content.bb-card {
-      background: rgba(255,255,255,0.98) !important;
-      border: 1px solid rgba(0,0,0,0.06) !important;
-      color: #0b0f12;
-    }
-    [data-bs-theme="light"] .view-link { color: #0b5; }
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg bg-body border-bottom sticky-top">
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg sticky-top">
     <div class="container-fluid">
       <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-outline-secondary me-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#bbSidebar" aria-controls="bbSidebar" aria-label="Open sidebar">
-          <i class="fa-solid fa-bars"></i>
+        <button class="btn btn-glass me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#quinxSidebar" aria-controls="quinxSidebar" aria-label="Open sidebar">
+          <span class="material-icons">menu</span>
         </button>
-        <img src="assets/triangle-logo.svg" class="brand-dot" alt="" width="25" height="25">
-        <a class="navbar-brand fw-semibold" href="index.html">My BB</a>
+        <a class="navbar-brand fw-bold" href="index.html">
+          <span class="material-icons me-2" style="background: linear-gradient(135deg, var(--quinx-primary), var(--quinx-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">smart_toy</span>
+          Quinx Bot
+        </a>
       </div>
       <div class="d-flex align-items-center gap-2">
-        <button id="btnChangeKey" class="btn btn-outline-info" title="Change API key">
-          <i class="fa-solid fa-key me-1"></i> API Key
-        </button>
-        <button id="btnTheme" class="btn btn-outline-secondary" aria-label="Toggle theme" title="Toggle theme">
-          <i class="fa-solid fa-sun d-none" id="iconSun"></i>
-          <i class="fa-solid fa-moon" id="iconMoon"></i>
+        <button id="btnChangeKey" class="btn btn-glass">
+          <span class="material-icons me-1">key</span> API Key
         </button>
       </div>
     </div>
   </nav>
 
-  <div class="offcanvas offcanvas-start" tabindex="-1" id="bbSidebar" aria-labelledby="bbSidebarLabel">
+  <!-- SIDEBAR -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="quinxSidebar" aria-labelledby="quinxSidebarLabel">
     <div class="offcanvas-header">
-      <h5 class="offcanvas-title" id="bbSidebarLabel">
-        <i class="fa-solid fa-robot me-2"></i> My BB
+      <h5 class="offcanvas-title" id="quinxSidebarLabel">
+        <span class="material-icons me-2">smart_toy</span> Quinx Bot
       </h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body d-flex flex-column gap-2">
-      <a class="btn btn-outline-primary" href="account.html"><i class="fa-solid fa-user me-2"></i>Profile</a>
-      <a class="btn btn-outline-primary" href="index.html" rel="noopener"><i class="fa-solid fa-robot me-2"></i>Bots</a>
-      <a class="btn btn-primary" rel="noopener"><i
-          class="fa-solid fa-boxes me-2"></i>Libraries</a>
-      <a class="btn btn-outline-primary" href="https://help.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-book me-2"></i>Documentation</a>
-      <a class="btn btn-outline-primary" href="https://app.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-screwdriver-wrench me-2"></i>App Console</a>
-      <a class="btn btn-outline-primary" href="https://status.bots.business" target="_blank" rel="noopener"><i class="fa-solid fa-signal me-2"></i>Status</a>
-
-      <hr />
-      <button id="btnClearKey" class="btn btn-outline-danger"><i class="fa-solid fa-trash me-2"></i>Clear API Key</button>
-      <div class="text-center bb-muted mt-3">Made with ❤ by <a href="https://t.me/bottercc" rel="noopener" style="text-decoration: none;">Botter</a></div>
+      <a class="btn btn-glass text-start" href="account.html"><span class="material-icons me-2">person</span>Profile</a>
+      <a class="btn btn-glass text-start" href="bots.html" rel="noopener"><span class="material-icons me-2">smart_toy</span>Bots</a>
+      <a class="btn btn-glass text-start" href="commands.html" rel="noopener"><span class="material-icons me-2">code</span>Commands</a>
+      <a class="btn btn-primary text-start" rel="noopener"><span class="material-icons me-2">widgets</span>Libraries</a>
+      <a class="btn btn-glass text-start" href="https://help.bots.business" target="_blank" rel="noopener"><span class="material-icons me-2">menu_book</span>Documentation</a>
+      <a class="btn btn-glass text-start" href="https://app.bots.business" target="_blank" rel="noopener"><span class="material-icons me-2">settings</span>App Console</a>
+      <a class="btn btn-glass text-start" href="https://status.bots.business" target="_blank" rel="noopener"><span class="material-icons me-2">monitor_heart</span>Status</a>
+      <hr class="my-3" style="border-color: var(--quinx-border);" />
+      <button id="btnClearKey" class="btn btn-glass text-start"><span class="material-icons me-2">delete</span>Clear API Key</button>
+      
+      <!-- Mini Stats Dashboard -->
+      <div class="stats-card mt-3">
+        <h6 class="stat-label">Libraries Overview</h6>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <div class="stat-value" id="totalLibraries">0</div>
+            <div class="stat-label">Available</div>
+          </div>
+          <div>
+            <div class="stat-value" id="installedCount">0</div>
+            <div class="stat-label">Installed</div>
+          </div>
+        </div>
+        <div class="progress-labels d-flex justify-content-between mb-1">
+          <span>Usage</span>
+          <span id="usagePercent">0%</span>
+        </div>
+        <div class="progress">
+          <div id="usageBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+        </div>
+      </div>
+      
+      <div class="copyright mt-3">
+        Made with <span class="material-icons" style="color: #ef4444; font-size: 1rem;">favorite</span> by <a href='https://telegram.me/Shineii86'>Shinei Nouzen</a>
+        Version 1.0.0 Beta
+      </div>
     </div>
   </div>
 
+  <!-- MAIN CONTENT -->
   <main class="container py-4">
-    <header class="mb-2 d-flex justify-content-between align-items-center">
-      <div>
-        <h1 class="h3 bb-section-title">
-          <i class="fa-solid fa-boxes me-2 text-info"></i> Install libraries
-        </h1>
-        <p class="bb-muted mb-0">Install libs from the store into your bot. Use <code>?botid=</code> to target a bot directly or select bots when needed.</p>
-        <div class="mb-3">
-      <div id="currentBotBox" class="current-bot-box bb-card">
-        <!-- populated by JS -->
+    <header class="mb-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="h3 quinx-section-title">
+            <span class="material-icons me-2">widgets</span> Install Libraries
+          </h1>
+          <p class="text-muted mb-0">Install libraries from the store into your bot. Use <code>?botid=</code> to target a bot directly or select bots when needed.</p>
+        </div>
       </div>
-    </div>
+      <div class="mt-3">
+        <div id="currentBotBox" class="current-bot-box">
+          <!-- populated by JS -->
+        </div>
       </div>
     </header>
 
-
-    <section class="bb-card">
+    <section class="quinx-card p-4">
       <div id="libsContainer" class="lib-grid"></div>
-      <div id="noLibs" class="text-secondary mt-2 d-none">No libs found.</div>
+      <div id="noLibs" class="text-muted text-center py-5 d-none">
+        <span class="material-icons mb-2" style="font-size: 3rem; opacity: 0.5;">widgets</span>
+        <p>No libraries available at the moment.</p>
+      </div>
     </section>
   </main>
 
+  <!-- Loading overlay -->
   <div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
-    <div class="spinner-border text-info" role="status" aria-label="Loading"></div>
+    <div class="spinner-border text-primary" role="status" aria-label="Loading">
+      <span class="visually-hidden">Loading...</span>
+    </div>
   </div>
 
   <!-- Toast -->
   <div class="position-fixed bottom-0 end-0 p-3" style="z-index:2100">
-    <div id="toast" class="toast align-items-center text-bg-dark border-0" role="status" aria-live="polite" aria-atomic="true">
+    <div id="toast" class="toast align-items-center" role="status" aria-live="polite" aria-atomic="true">
       <div class="d-flex">
         <div class="toast-body" id="toastBody">Hello</div>
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -199,85 +455,114 @@
     </div>
   </div>
 
-  <!-- Bots modal (re-used for install multi-select or view single-select) -->
+  <!-- Bots Modal -->
   <div class="modal fade" id="botsModal" tabindex="-1" aria-labelledby="botsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content bb-card">
-        <div class="modal-header">
-          <h5 class="modal-title" id="botsModalLabel"><i class="fa-solid fa-list me-2 text-info"></i>Select bots</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-content quinx-card border-0">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title" id="botsModalLabel">
+            <span class="material-icons me-2">list</span> Select Bots
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p class="small text-secondary" id="botsModalHint">Select one or more bots.</p>
+          <p class="small text-muted" id="botsModalHint">Select one or more bots.</p>
           <div id="botsList" class="list-group"></div>
-          <div id="noBots" class="text-secondary mt-2 d-none">No bots available.</div>
+          <div id="noBots" class="text-muted mt-2 d-none">No bots available.</div>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button id="btnBotsPrimary" class="btn btn-info">Install to selected</button>
+        <div class="modal-footer border-top-0">
+          <button class="btn btn-glass" data-bs-dismiss="modal">Cancel</button>
+          <button id="btnBotsPrimary" class="btn btn-primary">
+            <span class="material-icons me-1">download</span> Install to Selected
+          </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Read more modal -->
+  <!-- Read More Modal -->
   <div class="modal fade" id="readModal" tabindex="-1" aria-labelledby="readModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content bb-card">
-        <div class="modal-header">
+      <div class="modal-content quinx-card border-0">
+        <div class="modal-header border-bottom-0">
           <h5 class="modal-title" id="readModalLabel"></h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <img id="readImage" src="" alt="" style="width:100%;max-height:360px;object-fit:cover;border-radius:6px;margin-bottom:.75rem;">
-          <pre id="readDescription" style="white-space:pre-wrap; background:transparent; border:0; padding:0; margin:0;"></pre>
+          <img id="readImage" src="" alt="" style="width:100%;max-height:360px;object-fit:cover;border-radius:12px;margin-bottom:1rem;">
+          <pre id="readDescription" style="white-space:pre-wrap; background:transparent; border:0; padding:0; margin:0; font-family: inherit;"></pre>
         </div>
-        <div class="modal-footer">
-          <div class="me-auto muted-small" id="readInstalls"></div>
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <div class="modal-footer border-top-0">
+          <div class="me-auto text-muted small" id="readInstalls"></div>
+          <button class="btn btn-glass" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Installed libs modal -->
+  <!-- Installed Libraries Modal -->
   <div class="modal fade" id="installedModal" tabindex="-1" aria-labelledby="installedModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content bb-card">
-        <div class="modal-header">
-          <h5 class="modal-title" id="installedModalLabel"><i class="fa-solid fa-box-open me-2 text-info"></i> Installed libs</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-content quinx-card border-0">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title" id="installedModalLabel">
+            <span class="material-icons me-2">inventory_2</span> Installed Libraries
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div id="installedList" class="list-group"></div>
-          <div id="noInstalled" class="text-secondary mt-2 d-none">No libs installed for this bot.</div>
+          <div id="noInstalled" class="text-muted mt-2 d-none">No libraries installed for this bot.</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Confirm delete installed lib -->
+  <!-- Confirm Delete Modal -->
   <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content bb-card">
-        <div class="modal-header">
-          <h5 class="modal-title">Confirm delete</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-content quinx-card border-0">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title">Confirm Delete</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body" id="confirmDeleteBody"></div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <div class="modal-footer border-top-0">
+          <button class="btn btn-glass" data-bs-dismiss="modal">Cancel</button>
           <button id="btnConfirmDelete" class="btn btn-danger">Delete</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- API Key Modal (injected dynamically) -->
+  <!-- API Key Modal -->
+  <div class="modal fade" id="apiKeyModal" tabindex="-1" aria-labelledby="apiKeyModalLabel" style="z-index: 1501;" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content quinx-card border-0">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title" id="apiKeyModalLabel">
+            <span class="material-icons me-2">key</span> Enter your API Key
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="btnCloseModal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-3 small text-muted">Paste the API key for Bots.Business. It will be saved in local storage on this device.</p>
+          <label for="apiKeyInput" class="form-label">API Key</label>
+          <textarea id="apiKeyInput" class="form-control" rows="3" placeholder="Paste your API key here..."></textarea>
+          <div class="form-text text-danger d-none" id="apiKeyError">Invalid API key. Please check and try again.</div>
+        </div>
+        <div class="modal-footer border-top-0">
+          <button id="btnSaveKey" type="button" class="btn btn-primary w-100">
+            <span class="material-icons me-2">save</span> Save & Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
   <script>
-    const STORAGE_NAME = "bb_api_key";
-    const THEME_KEY = "bb_theme";
+    const STORAGE_NAME = "quinx_api_key";
     const API_BASE = "https://appapi.bots.business/v2";
     const qs = new URLSearchParams(location.search);
     const urlBotId = qs.get("botid");
@@ -293,15 +578,36 @@
     function showLoading(show) {
       document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
     }
+
     function showToast(message) {
       const el = document.getElementById("toast");
       document.getElementById("toastBody").textContent = message;
       const toast = bootstrap.Toast.getOrCreateInstance(el, { delay: 3000 });
       toast.show();
     }
-    function getKey() { return localStorage.getItem(STORAGE_NAME); }
-    function setKey(k) { localStorage.setItem(STORAGE_NAME, k); }
-    function clearKey() { localStorage.removeItem(STORAGE_NAME); }
+
+    function getKey() { 
+      return localStorage.getItem(STORAGE_NAME); 
+    }
+    
+    function setKey(k) { 
+      localStorage.setItem(STORAGE_NAME, k); 
+    }
+    
+    function clearKey() { 
+      localStorage.removeItem(STORAGE_NAME); 
+    }
+
+    function updateStats() {
+      const totalLibraries = libs.length;
+      const installedCount = currentBotId ? libs.filter(lib => lib.installed).length : 0;
+      const usagePercent = totalLibraries > 0 ? Math.min(100, (installedCount / totalLibraries) * 100) : 0;
+      
+      document.getElementById("totalLibraries").textContent = totalLibraries;
+      document.getElementById("installedCount").textContent = installedCount;
+      document.getElementById("usagePercent").textContent = `${Math.round(usagePercent)}%`;
+      document.getElementById("usageBar").style.width = `${usagePercent}%`;
+    }
 
     async function fetchJson(url, opts = {}) {
       try {
@@ -335,21 +641,24 @@
       return text.slice(0, max-1).trim() + "…";
     }
 
-    // Render libs as YouTube-like tiles
+    // Render libraries as YouTube-like tiles
     function renderLibs() {
       const container = document.getElementById("libsContainer");
       container.innerHTML = "";
+      
       if (!libs || libs.length === 0) {
         document.getElementById("noLibs").classList.remove("d-none");
         return;
       }
+      
       document.getElementById("noLibs").classList.add("d-none");
+      
       libs.forEach(lib => {
         const tile = document.createElement("div");
         tile.className = "lib-tile";
         tile.innerHTML = `
           <div class="thumb-wrap">
-            <img src="${escapeHtml(lib.img_url || '')}" alt="${escapeHtml(lib.name)}" onerror="this.src='https://i.imgur.com/MPuABWf.png'">
+            <img src="${escapeHtml(lib.img_url || '')}" alt="${escapeHtml(lib.name)}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgdmlld0JveD0iMCAwIDQwMCAyMjUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjI1IiBmaWxsPSIjMEYxNzJBIi8+CjxwYXRoIGQ9Ik0yMDAgMTEyLjVDMjE0Ljg0OCAxMTIuNSAyMjcgMTAwLjM0OCAyMjcgODUuNUMyMjcgNzAuNjUyIDIxNC44NDggNTguNSAyMDAgNTguNUMxODUuMTUyIDU4LjUgMTczIDcwLjY1MiAxNzMgODUuNUMxNzMgMTAwLjM0OCAxODUuMTUyIDExMi41IDIwMCAxMTIuNVoiIGZpbGw9IiM4QjVDRjYiLz4KPHBhdGggZD0iTTE1MCAxNjZIMjUwQzI2NS4yMjUgMTY2IDI3Ny41IDE1My43MjUgMjc3LjUgMTM4LjVWMTA2QzI3Ny41IDkwLjc3NDggMjY1LjIyNSA3OC41IDI1MCA3OC41SDE1MEMxMzQuNzc1IDc4LjUgMTIyLjUgOTAuNzc0OCAxMjIuNSAxMDZWMTM4LjVDMTIyLjUgMTUzLjcyNSAxMzQuNzc1IDE2NiAxNTAgMTY2WiIgZmlsbD0iIzRFQTVFOSIvPgo8L3N2Zz4K'">
           </div>
           <div class="tile-body">
             <div class="lib-title" title="${escapeHtml(lib.name)}">${escapeHtml(lib.name)}</div>
@@ -357,8 +666,12 @@
             <div class="tile-meta">${readablyCount(lib.installations_count)} installs</div>
             <div class="tile-actions">
               <div>
-                <button class="btn btn-info btn-install" data-libid="${lib.id}"><i class="fa-solid fa-download me-1"></i>Install</button>
-                <button class="btn btn-outline-secondary btn-sm btn-read" data-libid="${lib.id}"><i class="fa-solid fa-book-open me-1"></i>Read more</button>
+                <button class="btn btn-primary btn-install" data-libid="${lib.id}">
+                  <span class="material-icons me-1">download</span>Install
+                </button>
+                <button class="btn btn-glass btn-sm btn-read" data-libid="${lib.id}">
+                  <span class="material-icons me-1">info</span>Details
+                </button>
               </div>
               <div class="muted-small"> </div>
             </div>
@@ -366,17 +679,25 @@
         `;
         container.appendChild(tile);
       });
+      
+      updateStats();
     }
 
-    // Load store libs
+    // Load store libraries
     async function loadStoreLibs() {
       const key = getKey();
       if (!key) { openKeyModal(); return; }
+      
       showLoading(true);
       const url = `${API_BASE}/store/libs?api_key=${encodeURIComponent(key)}`;
       const res = await fetchJson(url);
       showLoading(false);
-      if (!res.ok) { showToast("Failed to load libs"); return; }
+      
+      if (!res.ok) { 
+        showToast("Failed to load libraries"); 
+        return; 
+      }
+      
       libs = Array.isArray(res.data) ? res.data : [];
       renderLibs();
     }
@@ -385,11 +706,17 @@
     async function loadBots() {
       const key = getKey();
       if (!key) { openKeyModal(); return; }
+      
       showLoading(true);
       const url = `${API_BASE}/bots?api_key=${encodeURIComponent(key)}`;
       const res = await fetchJson(url);
       showLoading(false);
-      if (!res.ok) { showToast("Failed to load bots"); return; }
+      
+      if (!res.ok) { 
+        showToast("Failed to load bots"); 
+        return; 
+      }
+      
       bots = Array.isArray(res.data) ? res.data : [];
       renderBotsList();
     }
@@ -397,46 +724,58 @@
     function renderBotsList() {
       const wrap = document.getElementById("botsList");
       wrap.innerHTML = "";
+      
       if (!bots || bots.length === 0) {
         document.getElementById("noBots").classList.remove("d-none");
         return;
       }
+      
       document.getElementById("noBots").classList.add("d-none");
+      
       if (botsModalMode === 'install') {
         document.getElementById("botsModalHint").textContent = "Select one or more bots to install into.";
         document.getElementById("btnBotsPrimary").textContent = "Install to selected";
+        
         bots.forEach(b => {
           const el = document.createElement("label");
-          el.className = "list-group-item d-flex align-items-center gap-3";
+          el.className = "list-group-item d-flex align-items-center gap-3 p-3";
           el.innerHTML = `
             <input class="form-check-input me-2 bot-checkbox" type="checkbox" data-botid="${b.id}">
             <div>
               <div style="font-weight:600">${escapeHtml(b.name || ('bot:' + b.id))}</div>
-              <div class="small text-secondary">id: ${b.id}</div>
+              <div class="small text-muted">id: ${b.id}</div>
             </div>
           `;
           wrap.appendChild(el);
         });
       } else {
-        document.getElementById("botsModalHint").textContent = "Select one bot to view installed libs.";
+        document.getElementById("botsModalHint").textContent = "Select one bot to view installed libraries.";
         document.getElementById("btnBotsPrimary").textContent = "View installed";
+        
         bots.forEach(b => {
           const item = document.createElement("button");
           item.type = "button";
-          item.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center bot-item";
+          item.className = "list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 bot-item";
           item.dataset.botid = b.id;
           item.dataset.botname = b.name || '';
-          item.innerHTML = `<div style="min-width:0"><div style="font-weight:600">${escapeHtml(b.name || ('bot:' + b.id))}</div><div class="small text-secondary">id: ${b.id}</div></div><div class="muted-small">select</div>`;
+          item.innerHTML = `
+            <div style="min-width:0">
+              <div style="font-weight:600">${escapeHtml(b.name || ('bot:' + b.id))}</div>
+              <div class="small text-muted">id: ${b.id}</div>
+            </div>
+            <div class="text-muted small">select</div>
+          `;
           wrap.appendChild(item);
         });
         selectedBotForView = null;
       }
     }
 
-    // Install lib to a single bot (returns true/false)
+    // Install library to a single bot
     async function installLibToBot(libId, botId) {
       const key = getKey();
       if (!key) { openKeyModal(); return false; }
+      
       showLoading(true);
       const url = `${API_BASE}/bots/${encodeURIComponent(botId)}/libs?api_key=${encodeURIComponent(key)}`;
       const res = await fetchJson(url, {
@@ -445,56 +784,73 @@
         body: JSON.stringify({ lib_id: Number(libId) })
       });
       showLoading(false);
+      
       if (!res.ok) {
         const msg = (res.data && res.data.error) ? res.data.error : (res.error || 'Install failed');
         showToast(msg);
         return false;
       }
+      
       if (res.data && typeof res.data === 'object' && res.data.error) {
         showToast(res.data.error);
         return false;
       }
+      
       return true;
     }
 
-    // Get installed libs for a bot
+    // Get installed libraries for a bot
     async function loadInstalledLibs(botId) {
       const key = getKey();
       if (!key) { openKeyModal(); return null; }
+      
       showLoading(true);
       const url = `${API_BASE}/bots/${encodeURIComponent(botId)}/libs?api_key=${encodeURIComponent(key)}`;
       const res = await fetchJson(url);
       showLoading(false);
-      if (!res.ok) { showToast("Failed to load installed libs"); return null; }
+      
+      if (!res.ok) { 
+        showToast("Failed to load installed libraries"); 
+        return null; 
+      }
+      
       return Array.isArray(res.data) ? res.data : [];
     }
 
-    // Delete installed lib
+    // Delete installed library
     async function removeInstalledLib(botId, libId) {
       const key = getKey();
       if (!key) { openKeyModal(); return false; }
+      
       showLoading(true);
       const url = `${API_BASE}/bots/${encodeURIComponent(botId)}/libs/${encodeURIComponent(libId)}?api_key=${encodeURIComponent(key)}`;
       const res = await fetchJson(url, { method: "DELETE" });
       showLoading(false);
+      
       if (!res.ok) {
         const msg = (res.data && res.data.error) ? res.data.error : 'Delete failed';
         showToast(msg);
         return false;
       }
+      
       return true;
     }
 
-    // Populate the current-bot box below header (right side)
+    // Populate the current-bot box
     function setCurrentBotBox() {
       const box = document.getElementById("currentBotBox");
       box.innerHTML = "";
+      
       if (currentBotId) {
-        // show bot id (try to show bot name if we have it in bots[] cache)
+        // Show bot id (try to show bot name if we have it in bots[] cache)
         const bot = bots.find(b => String(b.id) === String(currentBotId));
         const name = bot ? (bot.name || ('#' + currentBotId)) : ('#' + currentBotId);
-        box.innerHTML = `<div style="font-weight:700">${escapeHtml(name)}</div><div><span class="view-link" id="viewInstalledBtn">View libs</span></div>`;
-        // attach click
+        box.innerHTML = `
+          <div style="font-weight:700">${escapeHtml(name)}</div>
+          <div><span class="view-link" id="viewInstalledBtn">View installed libraries</span></div>
+        `;
+        
+        // Attach click event
         const el = box.querySelector("#viewInstalledBtn");
         el.addEventListener("click", async (ev) => {
           ev.preventDefault();
@@ -503,7 +859,10 @@
           bootstrap.Modal.getOrCreateInstance(document.getElementById("installedModal")).show();
         });
       } else {
-        box.innerHTML = `<div style="font-weight:700">Select Bot</div><div class="small text-secondary">Click to choose a bot</div>`;
+        box.innerHTML = `
+          <div style="font-weight:700">Select Bot</div>
+          <div class="small text-muted">Click to choose a bot</div>
+        `;
         box.style.cursor = "pointer";
         box.addEventListener("click", async () => {
           botsModalMode = 'view';
@@ -524,89 +883,82 @@
       document.getElementById("readModalLabel").textContent = lib.name || "Details";
       const img = document.getElementById("readImage");
       img.src = lib.img_url || '';
-      img.onerror = function(){ this.src='https://i.imgur.com/MPuABWf.png' };
+      img.onerror = function(){ this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgdmlld0JveD0iMCAwIDQwMCAyMjUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjI1IiBmaWxsPSIjMEYxNzJBIi8+CjxwYXRoIGQ9Ik0yMDAgMTEyLjVDMjE0Ljg0OCAxMTIuNSAyMjcgMTAwLjM0OCAyMjcgODUuNUMyMjcgNzAuNjUyIDIxNC44NDggNTguNSAyMDAgNTguNUMxODUuMTUyIDU4LjUgMTczIDcwLjY1MiAxNzMgODUuNUMxNzMgMTAwLjM0OCAxODUuMTUyIDExMi41IDIwMCAxMTIuNVoiIGZpbGw9IiM4QjVDRjYiLz4KPHBhdGggZD0iTTE1MCAxNjZIMjUwQzI2NS4yMjUgMTY2IDI3Ny41IDE1My43MjUgMjc3LjUgMTM4LjVWMTA2QzI3Ny41IDkwLjc3NDggMjY1LjIyNSA3OC41IDI1MCA3OC41SDE1MEMxMzQuNzc1IDc4LjUgMTIyLjUgOTAuNzc0OCAxMjIuNSAxMDZWMTM4LjVDMTIyLjUgMTUzLjcyNSAxMzQuNzc1IDE2NiAxNTAgMTY2WiIgZmlsbD0iIzRFQTVFOSIvPgo8L3N2Zz4K' };
       document.getElementById("readDescription").textContent = lib.description || '';
       document.getElementById("readInstalls").textContent = `${readablyCount(lib.installations_count)} installs`;
       bootstrap.Modal.getOrCreateInstance(document.getElementById("readModal")).show();
     }
 
-    // show installed list helper
+    // Show installed list helper
     function showInstalledList(installed) {
       const wrap = document.getElementById("installedList");
       wrap.innerHTML = "";
+      
       if (!installed || installed.length === 0) {
         document.getElementById("noInstalled").classList.remove("d-none");
         return;
       }
+      
       document.getElementById("noInstalled").classList.add("d-none");
+      
       installed.forEach(item => {
         const el = document.createElement("div");
-        el.className = "list-group-item d-flex justify-content-between align-items-center";
-        el.innerHTML = `<div style="min-width:0"><div style="font-weight:600">${escapeHtml(item.name)}</div></div>
-          <div><button class="btn btn-sm btn-outline-danger btn-uninstall" data-libid="${item.id}"><i class="fa-solid fa-trash"></i></button></div>`;
+        el.className = "list-group-item d-flex justify-content-between align-items-center p-3";
+        el.innerHTML = `
+          <div style="min-width:0">
+            <div style="font-weight:600">${escapeHtml(item.name)}</div>
+          </div>
+          <div>
+            <button class="btn btn-sm btn-glass btn-uninstall" data-libid="${item.id}">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+        `;
         wrap.appendChild(el);
       });
     }
 
     // DOM bindings
     document.addEventListener("DOMContentLoaded", () => {
-      // Insert API key modal (same pattern)
-      const apiKeyModalHtml = `
-        <div class="modal fade" id="apiKeyModal" tabindex="-1" aria-labelledby="apiKeyModalLabel" style="z-index: 1501;">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content bb-card">
-              <div class="modal-header">
-                <h5 class="modal-title" id="apiKeyModalLabel"><i class="fa-solid fa-key me-2 text-info"></i> Enter your API Key</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btnCloseModal"></button>
-              </div>
-              <div class="modal-body">
-                <p class="mb-2 small text-secondary">Paste the API key for Bots.Business. It will be saved in local storage on this device.</p>
-                <label for="apiKeyInput" class="form-label">API Key</label>
-                <textarea id="apiKeyInput" class="form-control" rows="3" placeholder="Paste your API key here..."></textarea>
-                <div class="form-text text-danger d-none" id="apiKeyError">Invalid API key. Please check and try again.</div>
-              </div>
-              <div class="modal-footer">
-                <button id="btnSaveKey" type="button" class="btn btn-info"><i class="fa-solid fa-floppy-disk me-2"></i> Save & Continue</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-      document.body.insertAdjacentHTML("beforeend", apiKeyModalHtml);
-
-      initTheme();
-
-      document.getElementById("btnTheme").addEventListener("click", () => {
-        const current = document.documentElement.getAttribute("data-bs-theme");
-        setTheme(current === "light" ? "dark" : "light");
-      });
-
       document.getElementById("btnChangeKey").addEventListener("click", openKeyModal);
+
       document.getElementById("btnClearKey").addEventListener("click", () => {
         clearKey();
         showToast("API key cleared");
         openKeyModal();
       });
 
-      // bots modal primary button behavior (mode dependent)
+      // Bots modal primary button behavior (mode dependent)
       document.getElementById("btnBotsPrimary").addEventListener("click", async () => {
         if (botsModalMode === 'install') {
           const checkboxes = Array.from(document.querySelectorAll(".bot-checkbox"));
           const selected = checkboxes.filter(cb => cb.checked).map(cb => cb.dataset.botid);
-          if (selected.length === 0) { showToast("Select at least one bot"); return; }
+          
+          if (selected.length === 0) { 
+            showToast("Select at least one bot"); 
+            return; 
+          }
+          
           bootstrap.Modal.getOrCreateInstance(document.getElementById("botsModal")).hide();
+          
           for (const bId of selected) {
             const ok = await installLibToBot(selectedLibToInstall, bId);
-            if (ok) showToast(`Installed to bot ${bId}`); else showToast(`Failed to install to ${bId}`);
+            if (ok) showToast(`Installed to bot ${bId}`); 
+            else showToast(`Failed to install to ${bId}`);
           }
+          
           selectedLibToInstall = null;
           installTargetBotIds = new Set();
         } else {
-          if (!selectedBotForView) { showToast("Select a bot to view installed libs"); return; }
+          if (!selectedBotForView) { 
+            showToast("Select a bot to view installed libraries"); 
+            return; 
+          }
+          
           bootstrap.Modal.getOrCreateInstance(document.getElementById("botsModal")).hide();
           const installed = await loadInstalledLibs(selectedBotForView);
           currentBotId = selectedBotForView;
-          await loadBots(); // refresh bots cache so we can show name in box
+          await loadBots(); // Refresh bots cache so we can show name in box
           setCurrentBotBox();
           showInstalledList(installed);
           bootstrap.Modal.getOrCreateInstance(document.getElementById("installedModal")).show();
@@ -614,21 +966,24 @@
         }
       });
 
-      // when bots list clicked in view mode, mark selected
+      // When bots list clicked in view mode, mark selected
       document.getElementById("botsList").addEventListener("click", (e) => {
         const item = e.target.closest(".bot-item");
         if (!item) return;
+        
         document.querySelectorAll(".bot-item").forEach(it => it.classList.remove("active"));
         item.classList.add("active");
         selectedBotForView = item.dataset.botid;
       });
 
-      // libs container click handler (install / read more)
+      // Libraries container click handler (install / read more)
       document.getElementById("libsContainer").addEventListener("click", async (e) => {
         const btn = e.target.closest("button");
         if (!btn) return;
+        
         const libId = btn.dataset.libid;
         if (!libId) return;
+        
         if (btn.classList.contains("btn-install")) {
           if (currentBotId) {
             const ok = await installLibToBot(libId, currentBotId);
@@ -646,13 +1001,14 @@
         }
       });
 
-      // installed modal uninstall handler
+      // Installed modal uninstall handler
       document.getElementById("installedList").addEventListener("click", (e) => {
         const btn = e.target.closest("button.btn-uninstall");
         if (!btn) return;
+        
         const libId = btn.dataset.libid;
         pendingDeleteLib = libId;
-        document.getElementById("confirmDeleteBody").textContent = `Remove lib #${libId} from bot ${currentBotId}? This cannot be undone.`;
+        document.getElementById("confirmDeleteBody").textContent = `Remove library #${libId} from bot ${currentBotId}? This cannot be undone.`;
         bootstrap.Modal.getOrCreateInstance(document.getElementById("confirmDeleteModal")).show();
       });
 
@@ -660,58 +1016,45 @@
         const libId = pendingDeleteLib;
         bootstrap.Modal.getOrCreateInstance(document.getElementById("confirmDeleteModal")).hide();
         pendingDeleteLib = null;
+        
         const ok = await removeInstalledLib(currentBotId, libId);
         if (ok) {
-          showToast("Removed");
+          showToast("Library removed successfully");
           const installed = await loadInstalledLibs(currentBotId);
           showInstalledList(installed);
         }
       });
 
-      // bots modal checkbox change handler for install selection
+      // Bots modal checkbox change handler for install selection
       document.getElementById("botsList").addEventListener("change", (e) => {
         const cb = e.target.closest(".bot-checkbox");
         if (!cb) return;
+        
         if (cb.checked) installTargetBotIds.add(cb.dataset.botid);
         else installTargetBotIds.delete(cb.dataset.botid);
       });
 
       // API Key modal save
-      document.body.addEventListener("click", (e) => {
-        if (e.target && e.target.id === "btnSaveKey") {
-          const txt = document.getElementById("apiKeyInput").value.trim();
-          if (!txt) {
-            document.getElementById("apiKeyError").textContent = "Please enter your API key.";
-            document.getElementById("apiKeyError").classList.remove("d-none");
-            return;
-          }
-          setKey(txt);
-          bootstrap.Modal.getOrCreateInstance(document.getElementById("apiKeyModal")).hide();
-          loadStoreLibs();
+      document.getElementById("btnSaveKey").addEventListener("click", () => {
+        const txt = document.getElementById("apiKeyInput").value.trim();
+        if (!txt) {
+          document.getElementById("apiKeyError").textContent = "Please enter your API key.";
+          document.getElementById("apiKeyError").classList.remove("d-none");
+          return;
         }
+        
+        setKey(txt);
+        bootstrap.Modal.getOrCreateInstance(document.getElementById("apiKeyModal")).hide();
+        loadStoreLibs();
       });
 
-      // initial load
-      // preload bots so we can show name if botid exists
+      // Initial load
+      // Preload bots so we can show name if botid exists
       loadBots().finally(() => {
         setCurrentBotBox();
         loadStoreLibs();
       });
     });
-
-    // Theme functions
-    function setTheme(mode) {
-      document.documentElement.setAttribute("data-bs-theme", mode);
-      localStorage.setItem(THEME_KEY, mode);
-      document.getElementById("iconSun").classList.toggle("d-none", mode !== "light");
-      document.getElementById("iconMoon").classList.toggle("d-none", mode === "light");
-    }
-    function initTheme() {
-      const saved = localStorage.getItem(THEME_KEY) || "dark";
-      setTheme(saved);
-    }
   </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 </body>
 </html>
