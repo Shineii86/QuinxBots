@@ -471,7 +471,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
   <script>
-    // Your existing JavaScript code remains mostly the same
     // Only updating references from "bb" to "quinx" where needed
     const STORAGE_NAME = "quinx_api_key";
     const API_BOTS_URL = "https://appapi.bots.business/v1/bots";
@@ -548,7 +547,7 @@
       if (!key) return "—";
       const start = key.slice(0, 20);
       const end = key.slice(-20);
-      return start + "••••" + end;
+      return start + "****" + end;
     }
 
     function renderBots(bots) {
@@ -865,3 +864,4 @@
   </script>
 </body>
 </html>
+
